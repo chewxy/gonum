@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package community
 
 import (
 	"fmt"
-	"math/rand"
 	"sort"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/internal/set"
@@ -81,7 +82,7 @@ type ReducedGraph interface {
 //
 // graph.Undirect may be used as a shim to allow modularization of
 // directed graphs with the undirected modularity function.
-func Modularize(g graph.Graph, resolution float64, src *rand.Rand) ReducedGraph {
+func Modularize(g graph.Graph, resolution float64, src rand.Source) ReducedGraph {
 	switch g := g.(type) {
 	case graph.Undirected:
 		return louvainUndirected(g, resolution, src)
@@ -191,7 +192,7 @@ type ReducedMultiplex interface {
 //
 // graph.Undirect may be used as a shim to allow modularization of
 // directed graphs with the undirected modularity function.
-func ModularizeMultiplex(g Multiplex, weights, resolutions []float64, all bool, src *rand.Rand) ReducedMultiplex {
+func ModularizeMultiplex(g Multiplex, weights, resolutions []float64, all bool, src rand.Source) ReducedMultiplex {
 	if weights != nil && len(weights) != g.Depth() {
 		panic("community: weights vector length mismatch")
 	}
@@ -358,10 +359,10 @@ const (
 // positiveWeightFuncFor returns a constructed weight function for the
 // positively weighted g. Unweighted graphs have unit weight for existing
 // edges.
-func positiveWeightFuncFor(g graph.Graph) func(x, y graph.Node) float64 {
+func positiveWeightFuncFor(g graph.Graph) func(xid, yid int64) float64 {
 	if wg, ok := g.(graph.Weighted); ok {
-		return func(x, y graph.Node) float64 {
-			w, ok := wg.Weight(x, y)
+		return func(xid, yid int64) float64 {
+			w, ok := wg.Weight(xid, yid)
 			if !ok {
 				return 0
 			}
@@ -371,8 +372,8 @@ func positiveWeightFuncFor(g graph.Graph) func(x, y graph.Node) float64 {
 			return w
 		}
 	}
-	return func(x, y graph.Node) float64 {
-		e := g.Edge(x, y)
+	return func(xid, yid int64) float64 {
+		e := g.Edge(xid, yid)
 		if e == nil {
 			return 0
 		}
@@ -383,10 +384,10 @@ func positiveWeightFuncFor(g graph.Graph) func(x, y graph.Node) float64 {
 // negativeWeightFuncFor returns a constructed weight function for the
 // negatively weighted g. Unweighted graphs have unit weight for existing
 // edges.
-func negativeWeightFuncFor(g graph.Graph) func(x, y graph.Node) float64 {
+func negativeWeightFuncFor(g graph.Graph) func(xid, yid int64) float64 {
 	if wg, ok := g.(graph.Weighted); ok {
-		return func(x, y graph.Node) float64 {
-			w, ok := wg.Weight(x, y)
+		return func(xid, yid int64) float64 {
+			w, ok := wg.Weight(xid, yid)
 			if !ok {
 				return 0
 			}
@@ -396,8 +397,8 @@ func negativeWeightFuncFor(g graph.Graph) func(x, y graph.Node) float64 {
 			return -w
 		}
 	}
-	return func(x, y graph.Node) float64 {
-		e := g.Edge(x, y)
+	return func(xid, yid int64) float64 {
+		e := g.Edge(xid, yid)
 		if e == nil {
 			return 0
 		}

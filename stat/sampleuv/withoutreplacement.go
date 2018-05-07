@@ -1,12 +1,13 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package sampleuv
 
 import (
-	"math/rand"
 	"sort"
+
+	"golang.org/x/exp/rand"
 )
 
 // WithoutReplacement samples len(idxs) integers from [0, n) without replacement.
@@ -15,7 +16,7 @@ import (
 // source from the math/rand package will be used.
 //
 // WithoutReplacement will panic if len(idxs) > n.
-func WithoutReplacement(idxs []int, n int, src *rand.Rand) {
+func WithoutReplacement(idxs []int, n int, src rand.Source) {
 	if len(idxs) == 0 {
 		panic("withoutreplacement: zero length input")
 	}
@@ -31,11 +32,12 @@ func WithoutReplacement(idxs []int, n int, src *rand.Rand) {
 	if n < len(idxs)*len(idxs) {
 		var perm []int
 		if src != nil {
-			perm = src.Perm(n)
+			perm = rand.New(src).Perm(n)
 		} else {
 			perm = rand.Perm(n)
 		}
 		copy(idxs, perm)
+		return
 	}
 
 	// Instead, generate the random numbers directly.
@@ -43,7 +45,7 @@ func WithoutReplacement(idxs []int, n int, src *rand.Rand) {
 	for i := range idxs {
 		var r int
 		if src != nil {
-			r = src.Intn(n - i)
+			r = rand.New(src).Intn(n - i)
 		} else {
 			r = rand.Intn(n - i)
 		}

@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,8 @@ package network
 
 import (
 	"math"
-	"math/rand"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/graph"
@@ -34,7 +35,7 @@ func PageRank(g graph.Directed, damp, tol float64) map[int64]float64 {
 	m := mat.NewDense(len(nodes), len(nodes), nil)
 	dangling := damp / float64(len(nodes))
 	for j, u := range nodes {
-		to := g.From(u)
+		to := g.From(u.ID())
 		f := damp / float64(len(to))
 		for _, v := range to {
 			m.Set(indexOf[v.ID()], j, f)
@@ -108,7 +109,7 @@ func PageRankSparse(g graph.Directed, damp, tol float64) map[int64]float64 {
 	var dangling compressedRow
 	df := damp / float64(len(nodes))
 	for j, u := range nodes {
-		to := g.From(u)
+		to := g.From(u.ID())
 		f := damp / float64(len(to))
 		for _, v := range to {
 			m.addTo(indexOf[v.ID()], j, f)

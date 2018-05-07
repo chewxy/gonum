@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,7 +10,8 @@ package gen
 import (
 	"fmt"
 	"math"
-	"math/rand"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -20,7 +21,7 @@ import (
 // between nodes are formed with the probability, p. If src is not nil it is used
 // as the random source, otherwise rand.Float64 is used. The graph is constructed
 // in O(n+m) time where m is the number of edges added.
-func Gnp(dst GraphBuilder, n int, p float64, src *rand.Rand) error {
+func Gnp(dst GraphBuilder, n int, p float64, src rand.Source) error {
 	if p == 0 {
 		return nil
 	}
@@ -31,11 +32,11 @@ func Gnp(dst GraphBuilder, n int, p float64, src *rand.Rand) error {
 	if src == nil {
 		r = rand.Float64
 	} else {
-		r = src.Float64
+		r = rand.New(src).Float64
 	}
 
 	for i := 0; i < n; i++ {
-		if !dst.Has(simple.Node(i)) {
+		if !dst.Has(int64(i)) {
 			dst.AddNode(simple.Node(i))
 		}
 	}
@@ -86,7 +87,7 @@ func edgeNodesFor(i int) (v, w simple.Node) {
 // order n and size m. If src is not nil it is used as the random source,
 // otherwise rand.Intn is used. The graph is constructed in O(m) expected
 // time for m ≤ (n choose 2)/2.
-func Gnm(dst GraphBuilder, n, m int, src *rand.Rand) error {
+func Gnm(dst GraphBuilder, n, m int, src rand.Source) error {
 	if m == 0 {
 		return nil
 	}
@@ -107,11 +108,11 @@ func Gnm(dst GraphBuilder, n, m int, src *rand.Rand) error {
 	if src == nil {
 		rnd = rand.Intn
 	} else {
-		rnd = src.Intn
+		rnd = rand.New(src).Intn
 	}
 
 	for i := 0; i < n; i++ {
-		if !dst.Has(simple.Node(i)) {
+		if !dst.Has(int64(i)) {
 			dst.AddNode(simple.Node(i))
 		}
 	}
@@ -121,7 +122,7 @@ func Gnm(dst GraphBuilder, n, m int, src *rand.Rand) error {
 		for {
 			v, w := edgeNodesFor(rnd(nChoose2))
 			e := simple.Edge{F: w, T: v}
-			if !hasEdge(e.F, e.T) {
+			if !hasEdge(e.F.ID(), e.T.ID()) {
 				dst.SetEdge(e)
 				break
 			}
@@ -136,7 +137,7 @@ func Gnm(dst GraphBuilder, n, m int, src *rand.Rand) error {
 		for {
 			v, w := edgeNodesFor(rnd(nChoose2))
 			e := simple.Edge{F: v, T: w}
-			if !hasEdge(e.F, e.T) {
+			if !hasEdge(e.F.ID(), e.T.ID()) {
 				dst.SetEdge(e)
 				break
 			}
@@ -152,7 +153,7 @@ func Gnm(dst GraphBuilder, n, m int, src *rand.Rand) error {
 // The graph is constructed in O(nd) time.
 //
 // The algorithm used is described in http://algo.uni-konstanz.de/publications/bb-eglrn-05.pdf
-func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error {
+func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src rand.Source) error {
 	if d < 1 || d > (n-1)/2 {
 		return fmt.Errorf("gen: bad degree: d=%d", d)
 	}
@@ -170,8 +171,9 @@ func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error 
 		rnd = rand.Float64
 		rndN = rand.Intn
 	} else {
-		rnd = src.Float64
-		rndN = src.Intn
+		r := rand.New(src)
+		rnd = r.Float64
+		rndN = r.Intn
 	}
 
 	hasEdge := dst.HasEdgeBetween
@@ -181,7 +183,7 @@ func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error 
 	}
 
 	for i := 0; i < n; i++ {
-		if !dst.Has(simple.Node(i)) {
+		if !dst.Has(int64(i)) {
 			dst.AddNode(simple.Node(i))
 		}
 	}
@@ -200,14 +202,14 @@ func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error 
 				j := v*(v-1)/2 + (v+i)%n
 				var ej simple.Edge
 				ej.T, ej.F = edgeNodesFor(j)
-				if !hasEdge(ej.From(), ej.To()) {
+				if !hasEdge(ej.From().ID(), ej.To().ID()) {
 					dst.SetEdge(ej)
 				}
 				k--
 				m++
 				var em simple.Edge
 				em.T, em.F = edgeNodesFor(m)
-				if !hasEdge(em.From(), em.To()) {
+				if !hasEdge(em.From().ID(), em.To().ID()) {
 					replace[j] = m
 				} else {
 					replace[j] = replace[m]
@@ -221,17 +223,17 @@ func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error 
 		r := rndN(nChoose2-i) + i
 		var er simple.Edge
 		er.T, er.F = edgeNodesFor(r)
-		if !hasEdge(er.From(), er.To()) {
+		if !hasEdge(er.From().ID(), er.To().ID()) {
 			dst.SetEdge(er)
 		} else {
 			er.T, er.F = edgeNodesFor(replace[r])
-			if !hasEdge(er.From(), er.To()) {
+			if !hasEdge(er.From().ID(), er.To().ID()) {
 				dst.SetEdge(er)
 			}
 		}
 		var ei simple.Edge
 		ei.T, ei.F = edgeNodesFor(i)
-		if !hasEdge(ei.From(), ei.To()) {
+		if !hasEdge(ei.From().ID(), ei.To().ID()) {
 			replace[r] = i
 		} else {
 			replace[r] = replace[i]
@@ -251,12 +253,12 @@ func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error 
 				j := v*(v-1)/2 + (v+i)%n
 				var ej simple.Edge
 				ej.F, ej.T = edgeNodesFor(j)
-				if !hasEdge(ej.From(), ej.To()) {
+				if !hasEdge(ej.From().ID(), ej.To().ID()) {
 					dst.SetEdge(ej)
 				}
 				k--
 				m++
-				if !hasEdge(edgeNodesFor(m)) {
+				if u, v := edgeNodesFor(m); !hasEdge(u.ID(), v.ID()) {
 					replace[j] = m
 				} else {
 					replace[j] = replace[m]
@@ -270,15 +272,15 @@ func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error 
 		r := rndN(nChoose2-i) + i
 		var er simple.Edge
 		er.F, er.T = edgeNodesFor(r)
-		if !hasEdge(er.From(), er.To()) {
+		if !hasEdge(er.From().ID(), er.To().ID()) {
 			dst.SetEdge(er)
 		} else {
 			er.F, er.T = edgeNodesFor(replace[r])
-			if !hasEdge(er.From(), er.To()) {
+			if !hasEdge(er.From().ID(), er.To().ID()) {
 				dst.SetEdge(er)
 			}
 		}
-		if !hasEdge(edgeNodesFor(i)) {
+		if u, v := edgeNodesFor(i); !hasEdge(u.ID(), v.ID()) {
 			replace[r] = i
 		} else {
 			replace[r] = replace[i]
@@ -288,53 +290,74 @@ func SmallWorldsBB(dst GraphBuilder, n, d int, p float64, src *rand.Rand) error 
 	return nil
 }
 
-/*
 // Multigraph generators.
 
-type EdgeAdder interface {
-	AddEdge(graph.Edge)
-}
-
-func PreferentialAttachment(dst EdgeAdder, n, d int, src *rand.Rand) {
+// PowerLaw constructs a power-law degree graph by preferential attachment in dst
+// with n nodes and minimum degree d. PowerLaw does not consider nodes in dst prior
+// to the call. If src is not nil it is used as the random source, otherwise rand.Intn
+// is used.
+// The graph is constructed in O(nd) — O(n+m) — time.
+//
+// The algorithm used is described in http://algo.uni-konstanz.de/publications/bb-eglrn-05.pdf
+func PowerLaw(dst graph.MultigraphBuilder, n, d int, src rand.Source) error {
 	if d < 1 {
-		panic("gen: bad d")
+		return fmt.Errorf("gen: bad minimum degree: d=%d", d)
 	}
 	var rnd func(int) int
 	if src == nil {
 		rnd = rand.Intn
 	} else {
-		rnd = src.Intn
+		rnd = rand.New(src).Intn
 	}
 
-	m := make([]simple.Node, 2*n*d)
+	m := make([]graph.Node, 2*n*d)
 	for v := 0; v < n; v++ {
+		x := dst.NewNode()
+		dst.AddNode(x)
+
 		for i := 0; i < d; i++ {
-			m[2*(v*d+i)] = simple.Node(v)
-			m[2*(v*d+i)+1] = simple.Node(m[rnd(2*v*d+i+1)])
+			m[2*(v*d+i)] = x
+			m[2*(v*d+i)+1] = m[rnd(2*v*d+i+1)]
 		}
 	}
 	for i := 0; i < n*d; i++ {
-		dst.AddEdge(simple.Edge{F: m[2*i], T: m[2*i+1], W: 1})
+		dst.SetLine(dst.NewLine(m[2*i], m[2*i+1]))
 	}
+
+	return nil
 }
 
-func BipartitePreferentialAttachment(dst EdgeAdder, n, d int, src *rand.Rand) {
+// BipartitePowerLaw constructs a bipartite power-law degree graph by preferential attachment
+// in dst with 2×n nodes and minimum degree d. BipartitePowerLaw does not consider nodes in
+// dst prior to the call. The two partitions are returned in p1 and p2. If src is not nil it is
+// used as the random source, otherwise rand.Intn is used.
+// The graph is constructed in O(nd) — O(n+m) — time.
+//
+// The algorithm used is described in http://algo.uni-konstanz.de/publications/bb-eglrn-05.pdf
+func BipartitePowerLaw(dst graph.MultigraphBuilder, n, d int, src rand.Source) (p1, p2 []graph.Node, err error) {
 	if d < 1 {
-		panic("gen: bad d")
+		return nil, nil, fmt.Errorf("gen: bad minimum degree: d=%d", d)
 	}
 	var rnd func(int) int
 	if src == nil {
 		rnd = rand.Intn
 	} else {
-		rnd = src.Intn
+		rnd = rand.New(src).Intn
 	}
 
-	m1 := make([]simple.Node, 2*n*d)
-	m2 := make([]simple.Node, 2*n*d)
+	p := make([]graph.Node, 2*n)
+	for i := range p {
+		u := dst.NewNode()
+		dst.AddNode(u)
+		p[i] = u
+	}
+
+	m1 := make([]graph.Node, 2*n*d)
+	m2 := make([]graph.Node, 2*n*d)
 	for v := 0; v < n; v++ {
 		for i := 0; i < d; i++ {
-			m1[2*(v*d+i)] = simple.Node(v)
-			m2[2*(v*d+i)] = simple.Node(n + v)
+			m1[2*(v*d+i)] = p[v]
+			m2[2*(v*d+i)] = p[n+v]
 
 			if r := rnd(2*v*d + i + 1); r&0x1 == 0 {
 				m1[2*(v*d+i)+1] = m2[r]
@@ -350,8 +373,8 @@ func BipartitePreferentialAttachment(dst EdgeAdder, n, d int, src *rand.Rand) {
 		}
 	}
 	for i := 0; i < n*d; i++ {
-		dst.AddEdge(simple.Edge{F: m1[2*i], T: m1[2*i+1], W: 1})
-		dst.AddEdge(simple.Edge{F: m2[2*i], T: m2[2*i+1], W: 1})
+		dst.SetLine(dst.NewLine(m1[2*i], m1[2*i+1]))
+		dst.SetLine(dst.NewLine(m2[2*i], m2[2*i+1]))
 	}
+	return p[:n], p[n:], nil
 }
-*/

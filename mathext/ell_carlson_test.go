@@ -1,4 +1,4 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package mathext
 
 import (
 	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 )
 
 // Testing EllipticF (and EllipticRF) using the addition theorems from http://dlmf.nist.gov/19.11.i

@@ -1,6 +1,6 @@
 // This file is dual licensed under CC0 and The gonum license.
 //
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 //
@@ -55,10 +55,7 @@ func TestParseFile(t *testing.T) {
 			out: "../internal/testdata/attr_sep.golden",
 		},
 		{in: "../internal/testdata/subgraph_vertex.dot"},
-		{
-			in:  "../internal/testdata/port.dot",
-			out: "../internal/testdata/port.golden",
-		},
+		{in: "../internal/testdata/port.dot"},
 	}
 	for _, g := range golden {
 		file, err := dot.ParseFile(g.in)

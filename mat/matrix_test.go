@@ -1,4 +1,4 @@
-// Copyright ©2013 The gonum Authors. All rights reserved.
+// Copyright ©2013 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -371,14 +371,18 @@ type basicVector struct {
 	m []float64
 }
 
+func (v *basicVector) AtVec(i int) float64 {
+	if i < 0 || i >= v.Len() {
+		panic(ErrRowAccess)
+	}
+	return v.m[i]
+}
+
 func (v *basicVector) At(r, c int) float64 {
 	if c != 0 {
 		panic(ErrColAccess)
 	}
-	if r < 0 || r >= v.Len() {
-		panic(ErrRowAccess)
-	}
-	return v.m[r]
+	return v.AtVec(r)
 }
 
 func (v *basicVector) Dims() (r, c int) {
@@ -411,7 +415,7 @@ func TestDot(t *testing.T) {
 		}
 		return sum
 	}
-	testTwoInputFunc(t, "Dot", f, denseComparison, sameAnswerFloatApproxTol(1e-12), legalTypesVecVec, legalSizeSameVec)
+	testTwoInputFunc(t, "Dot", f, denseComparison, sameAnswerFloatApproxTol(1e-12), legalTypesVectorVector, legalSizeSameVec)
 }
 
 func TestEqual(t *testing.T) {

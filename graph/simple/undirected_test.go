@@ -1,4 +1,4 @@
-// Copyright ©2014 The gonum Authors. All rights reserved.
+// Copyright ©2014 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -37,7 +37,7 @@ func TestMaxID(t *testing.T) {
 	delete(nodes, Node(2))
 	n := g.NewNode()
 	g.AddNode(n)
-	if !g.Has(n) {
+	if !g.Has(n.ID()) {
 		t.Error("added node does not exist in graph")
 	}
 	if _, exists := nodes[n]; exists {

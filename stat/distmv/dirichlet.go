@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,8 @@ package distmv
 
 import (
 	"math"
-	"math/rand"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
@@ -26,7 +27,7 @@ import (
 type Dirichlet struct {
 	alpha []float64
 	dim   int
-	src   *rand.Rand
+	src   rand.Source
 
 	lbeta    float64
 	sumAlpha float64
@@ -34,7 +35,7 @@ type Dirichlet struct {
 
 // NewDirichlet creates a new dirichlet distribution with the given parameters alpha.
 // NewDirichlet will panic if len(alpha) == 0, or if any alpha is <= 0.
-func NewDirichlet(alpha []float64, src *rand.Rand) *Dirichlet {
+func NewDirichlet(alpha []float64, src rand.Source) *Dirichlet {
 	dim := len(alpha)
 	if dim == 0 {
 		panic(badZeroDimension)
@@ -136,7 +137,7 @@ func (d *Dirichlet) Prob(x []float64) float64 {
 func (d *Dirichlet) Rand(x []float64) []float64 {
 	x = reuseAs(x, d.dim)
 	for i := range x {
-		x[i] = distuv.Gamma{Alpha: d.alpha[i], Beta: 1, Source: d.src}.Rand()
+		x[i] = distuv.Gamma{Alpha: d.alpha[i], Beta: 1, Src: d.src}.Rand()
 	}
 	sum := floats.Sum(x)
 	floats.Scale(1/sum, x)

@@ -1,4 +1,4 @@
-// Copyright ©2014 The gonum Authors. All rights reserved.
+// Copyright ©2014 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,9 +6,10 @@ package mat
 
 import (
 	"math"
-	"math/rand"
 	"reflect"
 	"testing"
+
+	"golang.org/x/exp/rand"
 )
 
 func TestPool(t *testing.T) {

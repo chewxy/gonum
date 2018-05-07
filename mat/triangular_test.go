@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,9 +6,10 @@ package mat
 
 import (
 	"math"
-	"math/rand"
 	"reflect"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
@@ -317,6 +318,23 @@ func TestTriMul(t *testing.T) {
 	}
 	receiver = NewTriDense(3, Upper, nil)
 	testTwoInput(t, "TriMul", receiver, method, denseComparison, legalTypesUpper, legalSizeTriMul, 1e-14)
+}
+
+func TestScaleTri(t *testing.T) {
+	for _, f := range []float64{0.5, 1, 3} {
+		method := func(receiver, a Matrix) {
+			type ScaleTrier interface {
+				ScaleTri(f float64, a Triangular)
+			}
+			rd := receiver.(ScaleTrier)
+			rd.ScaleTri(f, a.(Triangular))
+		}
+		denseComparison := func(receiver, a *Dense) {
+			receiver.Scale(f, a)
+		}
+		testOneInput(t, "ScaleTriUpper", NewTriDense(3, Upper, nil), method, denseComparison, legalTypeTriUpper, isSquare, 1e-14)
+		testOneInput(t, "ScaleTriLower", NewTriDense(3, Lower, nil), method, denseComparison, legalTypeTriLower, isSquare, 1e-14)
+	}
 }
 
 func TestCopySymIntoTriangle(t *testing.T) {

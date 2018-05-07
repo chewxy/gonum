@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -315,17 +315,17 @@ var vectorData = []struct {
 	},
 	{
 		raw:  []byte("\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf0?\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\b@"),
-		want: NewVecDense(9, []float64{1, 2, 3, 4, 5, 6, 7, 8, 9}).SliceVec(0, 3),
+		want: NewVecDense(9, []float64{1, 2, 3, 4, 5, 6, 7, 8, 9}).SliceVec(0, 3).(*VecDense),
 		eq:   Equal,
 	},
 	{
 		raw:  []byte("\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\b@\x00\x00\x00\x00\x00\x00\x10@"),
-		want: NewVecDense(9, []float64{1, 2, 3, 4, 5, 6, 7, 8, 9}).SliceVec(1, 4),
+		want: NewVecDense(9, []float64{1, 2, 3, 4, 5, 6, 7, 8, 9}).SliceVec(1, 4).(*VecDense),
 		eq:   Equal,
 	},
 	{
 		raw:  []byte("\b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf0?\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\b@\x00\x00\x00\x00\x00\x00\x10@\x00\x00\x00\x00\x00\x00\x14@\x00\x00\x00\x00\x00\x00\x18@\x00\x00\x00\x00\x00\x00\x1c@\x00\x00\x00\x00\x00\x00 @"),
-		want: NewVecDense(9, []float64{1, 2, 3, 4, 5, 6, 7, 8, 9}).SliceVec(0, 8),
+		want: NewVecDense(9, []float64{1, 2, 3, 4, 5, 6, 7, 8, 9}).SliceVec(0, 8).(*VecDense),
 		eq:   Equal,
 	},
 	{

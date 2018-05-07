@@ -1,4 +1,4 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -47,7 +47,7 @@ func ExampleBellmanFordFrom_negativecycles() {
 		return
 	}
 	for _, n := range []simple.Node{'a', 'b', 'c', 'd', 'e', 'f'} {
-		p, w := pt.To(n)
+		p, w := pt.To(n.ID())
 		if math.IsNaN(w) {
 			fmt.Printf("negative cycle in path to %c path:%c\n", n, p)
 		}

@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,8 +8,8 @@ import "gonum.org/v1/gonum/graph"
 
 // GraphBuilder is a graph that can have nodes and edges added.
 type GraphBuilder interface {
-	Has(graph.Node) bool
-	HasEdgeBetween(x, y graph.Node) bool
+	Has(id int64) bool
+	HasEdgeBetween(xid, yid int64) bool
 	graph.Builder
 }
 

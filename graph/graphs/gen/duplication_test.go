@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -25,7 +25,7 @@ func (g *duplication) SetEdge(e graph.Edge) {
 		return
 	case e.From().ID() > e.To().ID():
 		g.addBackwards = true
-	case g.UndirectedMutator.HasEdgeBetween(e.From(), e.To()):
+	case g.UndirectedMutator.HasEdgeBetween(e.From().ID(), e.To().ID()):
 		g.addMultipleEdge = true
 	}
 

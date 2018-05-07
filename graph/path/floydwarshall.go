@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -23,9 +23,11 @@ func FloydWarshall(g graph.Graph) (paths AllShortest, ok bool) {
 	paths = newAllShortest(nodes, true)
 	for i, u := range nodes {
 		paths.dist.Set(i, i, 0)
-		for _, v := range g.From(u) {
-			j := paths.indexOf[v.ID()]
-			w, ok := weight(u, v)
+		uid := u.ID()
+		for _, v := range g.From(uid) {
+			vid := v.ID()
+			j := paths.indexOf[vid]
+			w, ok := weight(uid, vid)
 			if !ok {
 				panic("floyd-warshall: unexpected invalid weight")
 			}

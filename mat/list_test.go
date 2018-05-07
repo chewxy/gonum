@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,9 +7,10 @@ package mat
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"reflect"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
@@ -56,6 +57,11 @@ func legalSizeSolve(ar, ac, br, bc int) bool {
 	return ar == br
 }
 
+// legalSizeSameVec returns whether the two matrices are column vectors.
+func legalSizeVector(_, ac, _, bc int) bool {
+	return ac == 1 && bc == 1
+}
+
 // legalSizeSameVec returns whether the two matrices are column vectors of the
 // same dimension.
 func legalSizeSameVec(ar, ac, br, bc int) bool {
@@ -72,8 +78,8 @@ func isAnySize2(ar, ac, br, bc int) bool {
 	return true
 }
 
-// isAnyVecDense returns true for any column vector sizes.
-func isAnyVecDense(ar, ac int) bool {
+// isAnyColumnVector returns true for any column vector sizes.
+func isAnyColumnVector(ar, ac int) bool {
 	return ac == 1
 }
 
@@ -131,6 +137,32 @@ func legalTypeSym(a Matrix) bool {
 	return ok
 }
 
+// legalTypeTri returns whether a is a Triangular.
+func legalTypeTri(a Matrix) bool {
+	_, ok := a.(Triangular)
+	return ok
+}
+
+// legalTypeTriLower returns whether a is a Triangular with kind == Lower.
+func legalTypeTriLower(a Matrix) bool {
+	t, ok := a.(Triangular)
+	if !ok {
+		return false
+	}
+	_, kind := t.Triangle()
+	return kind == Lower
+}
+
+// legalTypeTriUpper returns whether a is a Triangular with kind == Upper.
+func legalTypeTriUpper(a Matrix) bool {
+	t, ok := a.(Triangular)
+	if !ok {
+		return false
+	}
+	_, kind := t.Triangle()
+	return kind == Upper
+}
+
 // legalTypesSym returns whether both input arguments are Symmetric.
 func legalTypesSym(a, b Matrix) bool {
 	if _, ok := a.(Symmetric); !ok {
@@ -142,14 +174,20 @@ func legalTypesSym(a, b Matrix) bool {
 	return true
 }
 
+// legalTypeVector returns whether v is a Vector.
+func legalTypeVector(v Matrix) bool {
+	_, ok := v.(Vector)
+	return ok
+}
+
 // legalTypeVec returns whether v is a *VecDense.
-func legalTypeVec(v Matrix) bool {
+func legalTypeVecDense(v Matrix) bool {
 	_, ok := v.(*VecDense)
 	return ok
 }
 
-// legalTypesVecVec returns whether both inputs are Vector
-func legalTypesVecVec(a, b Matrix) bool {
+// legalTypesVectorVector returns whether both inputs are Vector
+func legalTypesVectorVector(a, b Matrix) bool {
 	if _, ok := a.(Vector); !ok {
 		return false
 	}
@@ -170,9 +208,16 @@ func legalTypesVecDenseVecDense(a, b Matrix) bool {
 	return true
 }
 
-// legalTypesNotVecVec returns whether the first input is an arbitrary Matrix
+// legalTypesMatrixVector returns whether the first input is an arbitrary Matrix
+// and the second input is a Vector.
+func legalTypesMatrixVector(a, b Matrix) bool {
+	_, ok := b.(Vector)
+	return ok
+}
+
+// legalTypesMatrixVecDense returns whether the first input is an arbitrary Matrix
 // and the second input is a *VecDense.
-func legalTypesNotVecVec(a, b Matrix) bool {
+func legalTypesMatrixVecDense(a, b Matrix) bool {
 	_, ok := b.(*VecDense)
 	return ok
 }

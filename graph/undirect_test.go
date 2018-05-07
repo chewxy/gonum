@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -123,8 +123,8 @@ func TestUndirect(t *testing.T) {
 		src := graph.Undirect{G: g}
 		dst := simple.NewUndirectedMatrixFrom(src.Nodes(), 0, 0, 0)
 		for _, u := range src.Nodes() {
-			for _, v := range src.From(u) {
-				dst.SetEdge(src.Edge(u, v))
+			for _, v := range src.From(u.ID()) {
+				dst.SetEdge(src.Edge(u.ID(), v.ID()))
 			}
 		}
 
@@ -148,8 +148,8 @@ func TestUndirectWeighted(t *testing.T) {
 		src := graph.UndirectWeighted{G: g, Absent: test.absent, Merge: test.merge}
 		dst := simple.NewUndirectedMatrixFrom(src.Nodes(), 0, 0, 0)
 		for _, u := range src.Nodes() {
-			for _, v := range src.From(u) {
-				dst.SetWeightedEdge(src.WeightedEdge(u, v))
+			for _, v := range src.From(u.ID()) {
+				dst.SetWeightedEdge(src.WeightedEdge(u.ID(), v.ID()))
 			}
 		}
 

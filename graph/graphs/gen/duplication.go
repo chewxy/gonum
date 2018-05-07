@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,9 @@ package gen
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"sort"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/internal/ordered"
@@ -28,7 +29,7 @@ type UndirectedMutator interface {
 // created with probability sigma. With the exception of the sigma parameter, this
 // corresponds to the completely correlated case in doi:10.1016/S0022-5193(03)00028-6.
 // If src is not nil it is used as the random source, otherwise rand.Float64 is used.
-func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src *rand.Rand) error {
+func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src rand.Source) error {
 	// As described in doi:10.1016/S0022-5193(03)00028-6 but
 	// also clarified in doi:10.1186/gb-2007-8-4-r51.
 
@@ -50,8 +51,9 @@ func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src 
 		rnd = rand.Float64
 		rndN = rand.Intn
 	} else {
-		rnd = src.Float64
-		rndN = src.Intn
+		r := rand.New(src)
+		rnd = r.Float64
+		rndN = r.Intn
 	}
 
 	nodes := dst.Nodes()
@@ -65,6 +67,7 @@ func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src 
 	for i := 0; i < n; i++ {
 		u := nodes[rndN(len(nodes))]
 		d := dst.NewNode()
+		did := d.ID()
 
 		// Add the duplicate node.
 		dst.AddNode(d)
@@ -73,13 +76,14 @@ func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src 
 		// into the rest of the graph.
 		for {
 			// Add edges to parent's neighbours.
-			to := dst.From(u)
+			to := dst.From(u.ID())
 			sort.Sort(ordered.ByID(to))
 			for _, v := range to {
-				if rnd() < delta || dst.HasEdgeBetween(v, d) {
+				vid := v.ID()
+				if rnd() < delta || dst.HasEdgeBetween(vid, did) {
 					continue
 				}
-				if v.ID() < d.ID() {
+				if vid < did {
 					dst.SetEdge(dst.NewEdge(v, d))
 				} else {
 					dst.SetEdge(dst.NewEdge(d, v))
@@ -89,11 +93,13 @@ func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src 
 			// Add edges to old nodes.
 			scaledAlpha := alpha / float64(len(nodes))
 			for _, v := range nodes {
-				switch v.ID() {
-				case u.ID():
+				uid := u.ID()
+				vid := v.ID()
+				switch vid {
+				case uid:
 					if !math.IsNaN(sigma) {
 						if i == 0 || rnd() < sigma {
-							if v.ID() < d.ID() {
+							if vid < did {
 								dst.SetEdge(dst.NewEdge(v, d))
 							} else {
 								dst.SetEdge(dst.NewEdge(d, v))
@@ -103,8 +109,8 @@ func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src 
 					}
 					fallthrough
 				default:
-					if rnd() < scaledAlpha && !dst.HasEdgeBetween(v, d) {
-						if v.ID() < d.ID() {
+					if rnd() < scaledAlpha && !dst.HasEdgeBetween(vid, did) {
+						if vid < did {
 							dst.SetEdge(dst.NewEdge(v, d))
 						} else {
 							dst.SetEdge(dst.NewEdge(d, v))
@@ -113,7 +119,7 @@ func Duplication(dst UndirectedMutator, n int, delta, alpha, sigma float64, src 
 				}
 			}
 
-			if len(dst.From(d)) != 0 {
+			if len(dst.From(did)) != 0 {
 				break
 			}
 		}

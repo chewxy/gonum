@@ -1,4 +1,4 @@
-// Copyright ©2014 The gonum Authors. All rights reserved.
+// Copyright ©2014 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package stat
 
 import (
 	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
@@ -87,13 +88,13 @@ func TestCovarianceMatrix(t *testing.T) {
 		}
 
 	}
-	if !Panics(func() { CovarianceMatrix(nil, mat.NewDense(5, 2, nil), []float64{}) }) {
+	if !panics(func() { CovarianceMatrix(nil, mat.NewDense(5, 2, nil), []float64{}) }) {
 		t.Errorf("CovarianceMatrix did not panic with weight size mismatch")
 	}
-	if !Panics(func() { CovarianceMatrix(mat.NewSymDense(1, nil), mat.NewDense(5, 2, nil), nil) }) {
+	if !panics(func() { CovarianceMatrix(mat.NewSymDense(1, nil), mat.NewDense(5, 2, nil), nil) }) {
 		t.Errorf("CovarianceMatrix did not panic with preallocation size mismatch")
 	}
-	if !Panics(func() { CovarianceMatrix(nil, mat.NewDense(2, 2, []float64{1, 2, 3, 4}), []float64{1, -1}) }) {
+	if !panics(func() { CovarianceMatrix(nil, mat.NewDense(2, 2, []float64{1, 2, 3, 4}), []float64{1, -1}) }) {
 		t.Errorf("CovarianceMatrix did not panic with negative weights")
 	}
 }
@@ -183,13 +184,13 @@ func TestCorrelationMatrix(t *testing.T) {
 		}
 
 	}
-	if !Panics(func() { CorrelationMatrix(nil, mat.NewDense(5, 2, nil), []float64{}) }) {
+	if !panics(func() { CorrelationMatrix(nil, mat.NewDense(5, 2, nil), []float64{}) }) {
 		t.Errorf("CorrelationMatrix did not panic with weight size mismatch")
 	}
-	if !Panics(func() { CorrelationMatrix(mat.NewSymDense(1, nil), mat.NewDense(5, 2, nil), nil) }) {
+	if !panics(func() { CorrelationMatrix(mat.NewSymDense(1, nil), mat.NewDense(5, 2, nil), nil) }) {
 		t.Errorf("CorrelationMatrix did not panic with preallocation size mismatch")
 	}
-	if !Panics(func() { CorrelationMatrix(nil, mat.NewDense(2, 2, []float64{1, 2, 3, 4}), []float64{1, -1}) }) {
+	if !panics(func() { CorrelationMatrix(nil, mat.NewDense(2, 2, []float64{1, 2, 3, 4}), []float64{1, -1}) }) {
 		t.Errorf("CorrelationMatrix did not panic with negative weights")
 	}
 }
@@ -256,7 +257,7 @@ func TestCorrCov(t *testing.T) {
 			t.Errorf("%d: covToCorr did not match direct Covariance calculation.  Want: %v, got: %v. ", i, cov, covFromCorr)
 		}
 
-		if !Panics(func() { corrToCov(mat.NewSymDense(2, nil), []float64{}) }) {
+		if !panics(func() { corrToCov(mat.NewSymDense(2, nil), []float64{}) }) {
 			t.Errorf("CorrelationMatrix did not panic with sigma size mismatch")
 		}
 	}

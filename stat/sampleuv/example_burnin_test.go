@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -31,9 +31,7 @@ func ExampleMetropolisHastings_burnin() {
 	// to find acceptable samples.
 	proposal := ProposalDist{Sigma: 0.2}
 
-	samples := make([]float64, n+burnin)
-	MetropolisHastings(samples, initial, target, proposal, nil)
-
-	// Remove the initial samples through slicing.
-	samples = samples[burnin:]
+	samples := make([]float64, n)
+	mh := MetropolisHastings{Initial: initial, Target: target, Proposal: proposal, BurnIn: burnin}
+	mh.Sample(samples)
 }

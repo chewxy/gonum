@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -179,7 +179,7 @@ func TestBetweenness(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -208,7 +208,7 @@ func TestEdgeBetweenness(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -240,7 +240,7 @@ func TestBetweennessWeighted(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, math.Inf(1))
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -276,7 +276,7 @@ func TestEdgeBetweennessWeighted(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, math.Inf(1))
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {

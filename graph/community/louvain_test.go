@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,8 @@ package community
 
 import (
 	"fmt"
-	"math/rand"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/graphs/gen"

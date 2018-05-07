@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,10 +10,11 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"

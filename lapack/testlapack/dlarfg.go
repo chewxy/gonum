@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package testlapack
 
 import (
 	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
@@ -42,8 +43,18 @@ func DlarfgTest(t *testing.T, impl Dlarfger) {
 		},
 		{
 			alpha: 1,
-			n:     2,
+			n:     4,
 			x:     []float64{4, 5, 6},
+		},
+		{
+			alpha: 1,
+			n:     4,
+			x:     []float64{0, 0, 0},
+		},
+		{
+			alpha: dlamchS,
+			n:     4,
+			x:     []float64{dlamchS, dlamchS, dlamchS},
 		},
 	} {
 		n := test.n
@@ -55,6 +66,9 @@ func DlarfgTest(t *testing.T, impl Dlarfger) {
 				x[i] = rnd.Float64()
 			}
 		} else {
+			if len(test.x) != n-1 {
+				panic("bad test")
+			}
 			x = make([]float64, n-1)
 			copy(x, test.x)
 		}

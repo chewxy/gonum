@@ -1,4 +1,4 @@
-// Copyright ©2014 The gonum Authors. All rights reserved.
+// Copyright ©2014 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -54,7 +54,7 @@ func TestCircularMean(t *testing.T) {
 			t.Errorf("Circular mean mismatch case %d: Expected %v, Found %v", i, test.ans, c)
 		}
 	}
-	if !Panics(func() { CircularMean(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { CircularMean(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("CircularMean did not panic with x, wts length mismatch")
 	}
 }
@@ -125,14 +125,91 @@ func TestCorrelation(t *testing.T) {
 			t.Errorf("Correlation mismatch case %d. Expected %v, Found %v", i, test.ans, c)
 		}
 	}
-	if !Panics(func() { Correlation(make([]float64, 2), make([]float64, 3), make([]float64, 3)) }) {
+	if !panics(func() { Correlation(make([]float64, 2), make([]float64, 3), make([]float64, 3)) }) {
 		t.Errorf("Correlation did not panic with length mismatch")
 	}
-	if !Panics(func() { Correlation(make([]float64, 2), make([]float64, 3), nil) }) {
+	if !panics(func() { Correlation(make([]float64, 2), make([]float64, 3), nil) }) {
 		t.Errorf("Correlation did not panic with length mismatch")
 	}
-	if !Panics(func() { Correlation(make([]float64, 3), make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { Correlation(make([]float64, 3), make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("Correlation did not panic with weights length mismatch")
+	}
+}
+
+func ExampleKendall() {
+	x := []float64{8, -3, 7, 8, -4}
+	y := []float64{10, 5, 6, 3, -1}
+	w := []float64{2, 1.5, 3, 3, 2}
+
+	fmt.Println("Kendall correlation computes the number of ordered pairs")
+	fmt.Println("between two datasets.")
+
+	c := Kendall(x, y, w)
+	fmt.Printf("Kendall correlation is %.5f\n", c)
+
+	// Output:
+	// Kendall correlation computes the number of ordered pairs
+	// between two datasets.
+	// Kendall correlation is 0.25000
+}
+
+func TestKendall(t *testing.T) {
+	for i, test := range []struct {
+		x       []float64
+		y       []float64
+		weights []float64
+		ans     float64
+	}{
+		{
+			x:       []float64{0, 1, 2, 3},
+			y:       []float64{0, 1, 2, 3},
+			weights: nil,
+			ans:     1,
+		},
+		{
+			x:       []float64{0, 1},
+			y:       []float64{1, 0},
+			weights: nil,
+			ans:     -1,
+		},
+		{
+			x:       []float64{8, -3, 7, 8, -4},
+			y:       []float64{10, 15, 4, 5, -1},
+			weights: nil,
+			ans:     0.2,
+		},
+		{
+			x:       []float64{8, -3, 7, 8, -4},
+			y:       []float64{10, 5, 6, 3, -1},
+			weights: nil,
+			ans:     0.4,
+		},
+		{
+			x:       []float64{1, 2, 3, 4, 5},
+			y:       []float64{2, 3, 4, 5, 6},
+			weights: []float64{1, 1, 1, 1, 1},
+			ans:     1,
+		},
+		{
+			x:       []float64{1, 2, 3, 2, 1},
+			y:       []float64{2, 3, 2, 1, 0},
+			weights: []float64{1, 1, 0, 0, 0},
+			ans:     1,
+		},
+	} {
+		c := Kendall(test.x, test.y, test.weights)
+		if math.Abs(test.ans-c) > 1e-14 {
+			t.Errorf("Correlation mismatch case %d. Expected %v, Found %v", i, test.ans, c)
+		}
+	}
+	if !panics(func() { Kendall(make([]float64, 2), make([]float64, 3), make([]float64, 3)) }) {
+		t.Errorf("Kendall did not panic with length mismatch")
+	}
+	if !panics(func() { Kendall(make([]float64, 2), make([]float64, 3), nil) }) {
+		t.Errorf("Kendall did not panic with length mismatch")
+	}
+	if !panics(func() { Kendall(make([]float64, 3), make([]float64, 3), make([]float64, 2)) }) {
+		t.Errorf("Kendall did not panic with weights length mismatch")
 	}
 }
 
@@ -198,10 +275,10 @@ func TestCovariance(t *testing.T) {
 	}
 
 	// test the panic states
-	if !Panics(func() { Covariance(make([]float64, 2), make([]float64, 3), nil) }) {
+	if !panics(func() { Covariance(make([]float64, 2), make([]float64, 3), nil) }) {
 		t.Errorf("Covariance did not panic with x, y length mismatch")
 	}
-	if !Panics(func() { Covariance(make([]float64, 3), make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { Covariance(make([]float64, 3), make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("Covariance did not panic with x, weights length mismatch")
 	}
 
@@ -239,7 +316,7 @@ func TestCrossEntropy(t *testing.T) {
 			t.Errorf("Cross entropy mismatch case %d: Expected %v, Found %v", i, test.ans, c)
 		}
 	}
-	if !Panics(func() { CrossEntropy(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { CrossEntropy(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("CrossEntropy did not panic with p, q length mismatch")
 	}
 }
@@ -293,7 +370,7 @@ distribution`)
 
 func TestExKurtosis(t *testing.T) {
 	// the example does a good job, this just has to cover the panic
-	if !Panics(func() { ExKurtosis(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { ExKurtosis(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("ExKurtosis did not panic with x, weights length mismatch")
 	}
 }
@@ -337,7 +414,7 @@ func TestGeometricMean(t *testing.T) {
 			t.Errorf("Geometric mean mismatch case %d: Expected %v, Found %v", i, test.ans, c)
 		}
 	}
-	if !Panics(func() { GeometricMean(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { GeometricMean(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("GeometricMean did not panic with x, wts length mismatch")
 	}
 }
@@ -374,7 +451,7 @@ func TestHarmonicMean(t *testing.T) {
 			t.Errorf("Harmonic mean mismatch case %d: Expected %v, Found %v", i, test.ans, c)
 		}
 	}
-	if !Panics(func() { HarmonicMean(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { HarmonicMean(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("HarmonicMean did not panic with x, wts length mismatch")
 	}
 }
@@ -469,7 +546,7 @@ func TestHistogram(t *testing.T) {
 			dividers: []float64{2, 3},
 		},
 	} {
-		if !Panics(func() { Histogram(test.count, test.dividers, test.x, test.weights) }) {
+		if !panics(func() { Histogram(test.count, test.dividers, test.x, test.weights) }) {
 			t.Errorf("Histogram did not panic when %s", test.name)
 		}
 	}
@@ -571,7 +648,7 @@ func TestJensenShannon(t *testing.T) {
 			t.Errorf("JS mismatch case %v. Expected %v, found %v.", i, js1, js2)
 		}
 	}
-	if !Panics(func() { JensenShannon(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { JensenShannon(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("JensenShannon did not panic with p, q length mismatch")
 	}
 }
@@ -771,7 +848,7 @@ func TestKolmogorovSmirnov(t *testing.T) {
 			y:    []float64{10, 3, 5, 6, 7, 8},
 		},
 	} {
-		if !Panics(func() { KolmogorovSmirnov(test.x, test.xWeights, test.y, test.yWeights) }) {
+		if !panics(func() { KolmogorovSmirnov(test.x, test.xWeights, test.y, test.yWeights) }) {
 			t.Errorf("KolmogorovSmirnov did not panic when %s", test.name)
 		}
 	}
@@ -803,7 +880,7 @@ func ExampleKullbackLeibler() {
 }
 
 func TestKullbackLeibler(t *testing.T) {
-	if !Panics(func() { KullbackLeibler(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { KullbackLeibler(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("KullbackLeibler did not panic with p, q length mismatch")
 	}
 }
@@ -946,13 +1023,13 @@ func TestChiSquare(t *testing.T) {
 			t.Errorf("ChiSquare distance mismatch in case %d. Expected %v, Found %v", i, test.res, resultpq)
 		}
 	}
-	if !Panics(func() { ChiSquare(make([]float64, 2), make([]float64, 3)) }) {
+	if !panics(func() { ChiSquare(make([]float64, 2), make([]float64, 3)) }) {
 		t.Errorf("ChiSquare did not panic with length mismatch")
 	}
 }
 
-// Panics returns true if the called function panics during evaluation.
-func Panics(fun func()) (b bool) {
+// panics returns true if the called function panics during evaluation.
+func panics(fun func()) (b bool) {
 	defer func() {
 		err := recover()
 		if err != nil {
@@ -996,7 +1073,7 @@ func TestBhattacharyya(t *testing.T) {
 		}
 	}
 	// Bhattacharyya should panic if the inputs have different length
-	if !Panics(func() { Bhattacharyya(make([]float64, 2), make([]float64, 3)) }) {
+	if !panics(func() { Bhattacharyya(make([]float64, 2), make([]float64, 3)) }) {
 		t.Errorf("Bhattacharyya did not panic with length mismatch")
 	}
 }
@@ -1033,7 +1110,7 @@ func TestHellinger(t *testing.T) {
 			t.Errorf("Hellinger distance is assymmetric in case %d.", i)
 		}
 	}
-	if !Panics(func() { Hellinger(make([]float64, 2), make([]float64, 3)) }) {
+	if !panics(func() { Hellinger(make([]float64, 2), make([]float64, 3)) }) {
 		t.Errorf("Hellinger did not panic with length mismatch")
 	}
 }
@@ -1056,7 +1133,7 @@ func ExampleMean() {
 	// The weights act as if there were more samples of that number
 }
 func TestMean(t *testing.T) {
-	if !Panics(func() { Mean(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { Mean(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("Mean did not panic with x, weights length mismatch")
 	}
 }
@@ -1089,8 +1166,65 @@ func TestMode(t *testing.T) {
 			t.Errorf("Mode count mismatch case %d. Expected %v, found %v", i, test.count, count)
 		}
 	}
-	if !Panics(func() { Mode(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { Mode(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("Mode did not panic with x, weights length mismatch")
+	}
+}
+
+func TestMixedMoment(t *testing.T) {
+	for i, test := range []struct {
+		x, y, weights []float64
+		r, s          float64
+		ans           float64
+	}{
+		{
+			x:   []float64{10, 2, 1, 8, 5},
+			y:   []float64{8, 15, 1, 6, 3},
+			r:   1,
+			s:   1,
+			ans: 0.48,
+		},
+		{
+			x:       []float64{10, 2, 1, 8, 5},
+			y:       []float64{8, 15, 1, 6, 3},
+			weights: []float64{1, 1, 1, 1, 1},
+			r:       1,
+			s:       1,
+			ans:     0.48,
+		},
+		{
+			x:       []float64{10, 2, 1, 8, 5},
+			y:       []float64{8, 15, 1, 6, 3},
+			weights: []float64{2, 3, 0.2, 8, 4},
+			r:       1,
+			s:       1,
+			ans:     -4.786371011357490,
+		},
+		{
+			x:       []float64{10, 2, 1, 8, 5},
+			y:       []float64{8, 15, 1, 6, 3},
+			weights: []float64{2, 3, 0.2, 8, 4},
+			r:       2,
+			s:       3,
+			ans:     1.598600579313326e+03,
+		},
+	} {
+		m := BivariateMoment(test.r, test.s, test.x, test.y, test.weights)
+		if math.Abs(test.ans-m) > 1e-14 {
+			t.Errorf("Moment mismatch case %d. Expected %v, found %v", i, test.ans, m)
+		}
+	}
+	if !panics(func() { BivariateMoment(1, 1, make([]float64, 3), make([]float64, 2), nil) }) {
+		t.Errorf("Moment did not panic with x, y length mismatch")
+	}
+	if !panics(func() { BivariateMoment(1, 1, make([]float64, 2), make([]float64, 3), nil) }) {
+		t.Errorf("Moment did not panic with x, y length mismatch")
+	}
+	if !panics(func() { BivariateMoment(1, 1, make([]float64, 2), make([]float64, 2), make([]float64, 3)) }) {
+		t.Errorf("Moment did not panic with x, weights length mismatch")
+	}
+	if !panics(func() { BivariateMoment(1, 1, make([]float64, 2), make([]float64, 2), make([]float64, 1)) }) {
+		t.Errorf("Moment did not panic with x, weights length mismatch")
 	}
 }
 
@@ -1118,7 +1252,10 @@ func TestMoment(t *testing.T) {
 			t.Errorf("Moment mismatch case %d. Expected %v, found %v", i, test.ans, m)
 		}
 	}
-	if !Panics(func() { Moment(1, make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { Moment(1, make([]float64, 3), make([]float64, 2)) }) {
+		t.Errorf("Moment did not panic with x, weights length mismatch")
+	}
+	if !panics(func() { Moment(1, make([]float64, 2), make([]float64, 3)) }) {
 		t.Errorf("Moment did not panic with x, weights length mismatch")
 	}
 }
@@ -1150,7 +1287,7 @@ func TestMomentAbout(t *testing.T) {
 			t.Errorf("MomentAbout mismatch case %d. Expected %v, found %v", i, test.ans, m)
 		}
 	}
-	if !Panics(func() { MomentAbout(1, make([]float64, 3), 0, make([]float64, 2)) }) {
+	if !panics(func() { MomentAbout(1, make([]float64, 3), 0, make([]float64, 2)) }) {
 		t.Errorf("MomentAbout did not panic with x, weights length mismatch")
 	}
 }
@@ -1232,7 +1369,7 @@ func TestCDF(t *testing.T) {
 			x:    []float64{1, 2, 3},
 		},
 	} {
-		if !Panics(func() { CDF(test.q, test.kind, test.x, test.weights) }) {
+		if !panics(func() { CDF(test.q, test.kind, test.x, test.weights) }) {
 			t.Errorf("did not panic as expected with %s for case %d kind %d percentile %v x %v weights %v", test.name, i, test.kind, test.q, test.x, test.weights)
 		}
 	}
@@ -1330,7 +1467,7 @@ func TestQuantile(t *testing.T) {
 			x:    []float64{1, 2, 3},
 		},
 	} {
-		if !Panics(func() { Quantile(test.p, test.c, test.x, test.w) }) {
+		if !panics(func() { Quantile(test.p, test.c, test.x, test.w) }) {
 			t.Errorf("Quantile did not panic when %s", test.name)
 		}
 	}
@@ -1389,7 +1526,7 @@ func TestSkew(t *testing.T) {
 			t.Errorf("Skew mismatch case %d. Expected %v, Found %v", i, test.ans, skew)
 		}
 	}
-	if !Panics(func() { Skew(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { Skew(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("Skew did not panic with x, weights length mismatch")
 	}
 }
@@ -1420,7 +1557,7 @@ func TestSortWeighted(t *testing.T) {
 			t.Errorf("SortWeighted mismatch case %d. Expected w %v, Found w %v", i, test.answ, test.w)
 		}
 	}
-	if !Panics(func() { SortWeighted(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { SortWeighted(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("SortWeighted did not panic with x, weights length mismatch")
 	}
 }
@@ -1470,16 +1607,16 @@ func TestSortWeightedLabeled(t *testing.T) {
 			t.Errorf("SortWeightedLabelled mismatch case %d. Expected w %v, Found w %v", i, test.answ, test.w)
 		}
 	}
-	if !Panics(func() { SortWeightedLabeled(make([]float64, 3), make([]bool, 2), make([]float64, 3)) }) {
+	if !panics(func() { SortWeightedLabeled(make([]float64, 3), make([]bool, 2), make([]float64, 3)) }) {
 		t.Errorf("SortWeighted did not panic with x, labels length mismatch")
 	}
-	if !Panics(func() { SortWeightedLabeled(make([]float64, 3), make([]bool, 2), nil) }) {
+	if !panics(func() { SortWeightedLabeled(make([]float64, 3), make([]bool, 2), nil) }) {
 		t.Errorf("SortWeighted did not panic with x, labels length mismatch")
 	}
-	if !Panics(func() { SortWeightedLabeled(make([]float64, 3), make([]bool, 3), make([]float64, 2)) }) {
+	if !panics(func() { SortWeightedLabeled(make([]float64, 3), make([]bool, 3), make([]float64, 2)) }) {
 		t.Errorf("SortWeighted did not panic with x, weights length mismatch")
 	}
-	if !Panics(func() { SortWeightedLabeled(make([]float64, 3), nil, make([]float64, 2)) }) {
+	if !panics(func() { SortWeightedLabeled(make([]float64, 3), nil, make([]float64, 2)) }) {
 		t.Errorf("SortWeighted did not panic with x, weights length mismatch")
 	}
 }
@@ -1521,7 +1658,7 @@ func TestVariance(t *testing.T) {
 			t.Errorf("Variance mismatch case %d. Expected %v, Found %v", i, test.ans, variance)
 		}
 	}
-	if !Panics(func() { Variance(make([]float64, 3), make([]float64, 2)) }) {
+	if !panics(func() { Variance(make([]float64, 3), make([]float64, 2)) }) {
 		t.Errorf("Variance did not panic with x, weights length mismatch")
 	}
 

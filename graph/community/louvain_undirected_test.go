@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,10 +6,11 @@ package community
 
 import (
 	"math"
-	"math/rand"
 	"reflect"
 	"sort"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/graph"
@@ -152,13 +153,16 @@ var communityUndirectedQTests = []communityUndirectedQTest{
 				},
 			},
 			{
-				q: 0.39907955292570674,
+				q: 0.3496877054569362,
 				communities: [][]graph.Node{
 					{simple.Node(0), simple.Node(1), simple.Node(2), simple.Node(3), simple.Node(7), simple.Node(11), simple.Node(12), simple.Node(13), simple.Node(17), simple.Node(19), simple.Node(21)},
 					{simple.Node(4), simple.Node(10)},
 					{simple.Node(5), simple.Node(6), simple.Node(16)},
-					{simple.Node(8), simple.Node(9), simple.Node(14), simple.Node(15), simple.Node(18), simple.Node(20), simple.Node(22), simple.Node(26), simple.Node(29), simple.Node(30), simple.Node(32), simple.Node(33)},
-					{simple.Node(23), simple.Node(24), simple.Node(25), simple.Node(27), simple.Node(28), simple.Node(31)},
+					{simple.Node(8), simple.Node(9), simple.Node(14), simple.Node(15), simple.Node(18), simple.Node(20), simple.Node(22), simple.Node(30), simple.Node(32), simple.Node(33)},
+					{simple.Node(23), simple.Node(25)},
+					{simple.Node(24), simple.Node(27)},
+					{simple.Node(26), simple.Node(29)},
+					{simple.Node(28), simple.Node(31)},
 				},
 			},
 			{
@@ -225,7 +229,7 @@ var communityUndirectedQTests = []communityUndirectedQTest{
 				},
 			},
 			{
-				q: 0.34630102040816324,
+				q: 0.3463010204081633,
 				communities: [][]graph.Node{
 					{simple.Node(0), simple.Node(1), simple.Node(2), simple.Node(4), simple.Node(5)},
 					{simple.Node(3), simple.Node(6), simple.Node(7)},
@@ -263,7 +267,7 @@ func TestCommunityQUndirected(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -280,7 +284,7 @@ func TestCommunityQWeightedUndirected(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -316,7 +320,7 @@ func TestCommunityDeltaQUndirected(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -333,7 +337,7 @@ func TestCommunityDeltaQWeightedUndirected(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -397,7 +401,7 @@ func testCommunityDeltaQUndirected(t *testing.T, test communityUndirectedQTest, 
 				}
 				connected := false
 				for n := range c {
-					if g.HasEdgeBetween(simple.Node(n), target) {
+					if g.HasEdgeBetween(int64(n), target.ID()) {
 						connected = true
 						break
 					}
@@ -441,7 +445,7 @@ func TestReduceQConsistencyUndirected(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -458,7 +462,7 @@ func TestReduceQConsistencyWeightedUndirected(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -559,7 +563,7 @@ func TestMoveLocalUndirected(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -576,7 +580,7 @@ func TestMoveLocalWeightedUndirected(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -621,7 +625,7 @@ func TestModularizeUndirected(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -638,7 +642,7 @@ func TestModularizeWeightedUndirected(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {

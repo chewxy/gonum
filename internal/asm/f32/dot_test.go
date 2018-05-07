@@ -1,4 +1,4 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,11 +8,6 @@ import (
 	"fmt"
 	"math"
 	"testing"
-)
-
-const (
-	msgRes   = "%v: unexpected result Got: %v Expected: %v"
-	msgGuard = "%v: Guard violated in %s vector %v %v"
 )
 
 var dotTests = []struct {

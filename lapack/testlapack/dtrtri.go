@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package testlapack
 
 import (
 	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
@@ -19,7 +20,7 @@ type Dtrtrier interface {
 }
 
 func DtrtriTest(t *testing.T, impl Dtrtrier) {
-	const tol = 1e-6
+	const tol = 1e-10
 	rnd := rand.New(rand.NewSource(1))
 	bi := blas64.Implementation()
 	for _, uplo := range []blas.Uplo{blas.Upper, blas.Lower} {
@@ -41,7 +42,11 @@ func DtrtriTest(t *testing.T, impl Dtrtrier) {
 				}
 				a := make([]float64, n*lda)
 				for i := range a {
-					a[i] = rnd.Float64() + 1 // This keeps the matrices well conditioned.
+					a[i] = rnd.Float64()
+				}
+				for i := 0; i < n; i++ {
+					// This keeps the matrices well conditioned.
+					a[i*lda+i] += float64(n)
 				}
 				aCopy := make([]float64, len(a))
 				copy(aCopy, a)

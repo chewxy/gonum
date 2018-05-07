@@ -1,12 +1,13 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package testlapack
 
 import (
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
@@ -165,7 +166,7 @@ func Dggsvd3Test(t *testing.T, impl Dggsvd3er) {
 		d20r := nanGeneral(p, n, n)
 		blas64.Gemm(blas.NoTrans, blas.NoTrans, 1, d2, zeroR, 0, d20r)
 
-		if !equalApproxGeneral(vAns, d20r, 1e-14) {
+		if !equalApproxGeneral(vAns, d20r, 1e-13) {
 			t.Errorf("test %d: V^T*B*Q != D2*[ 0 R ]\nV^T*B*Q:\n%+v\nD2*[ 0 R ]:\n%+v",
 				cas, vAns, d20r)
 		}

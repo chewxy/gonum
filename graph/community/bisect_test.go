@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -62,7 +62,7 @@ func init() {
 	friends = simple.NewWeightedUndirectedGraph(0, 0)
 	for u, e := range middleEast.friends {
 		// Ensure unconnected nodes are included.
-		if !friends.Has(simple.Node(u)) {
+		if !friends.Has(int64(u)) {
 			friends.AddNode(simple.Node(u))
 		}
 		for v := range e {
@@ -72,7 +72,7 @@ func init() {
 	enemies = simple.NewWeightedUndirectedGraph(0, 0)
 	for u, e := range middleEast.enemies {
 		// Ensure unconnected nodes are included.
-		if !enemies.Has(simple.Node(u)) {
+		if !enemies.Has(int64(u)) {
 			enemies.AddNode(simple.Node(u))
 		}
 		for v := range e {
@@ -112,8 +112,8 @@ func ExampleProfile_multiplex() {
 	// Output:
 	// Low:0.1 High:0.72 Score:26 Communities:[[0] [1 7 9 12] [2 8 11] [3 4 5 10] [6]] Q=[24.7 1.97]
 	// Low:0.72 High:1.1 Score:24 Communities:[[0 6] [1 7 9 12] [2 8 11] [3 4 5 10]] Q=[16.9 14.1]
-	// Low:1.1 High:1.1 Score:18 Communities:[[0 2 6 11] [1 7 9 12] [3 4 5 8 10]] Q=[9.16 25.1]
-	// Low:1.1 High:1.6 Score:10 Communities:[[0 3 4 5 6 10] [1 7 9 12] [2 8 11]] Q=[11.5 23.9]
+	// Low:1.1 High:1.2 Score:18 Communities:[[0 2 6 11] [1 7 9 12] [3 4 5 8 10]] Q=[9.16 25.1]
+	// Low:1.2 High:1.6 Score:10 Communities:[[0 3 4 5 6 10] [1 7 9 12] [2 8 11]] Q=[10.5 26.5]
 	// Low:1.6 High:1.6 Score:8 Communities:[[0 1 6 7 9 12] [2 8 11] [3 4 5 10]] Q=[5.56 39.8]
 	// Low:1.6 High:1.8 Score:2 Communities:[[0 2 3 4 5 6 10] [1 7 8 9 11 12]] Q=[-1.82 48.6]
 	// Low:1.8 High:2.3 Score:-6 Communities:[[0 2 3 4 5 6 8 10 11] [1 7 9 12]] Q=[-5 57.5]
@@ -127,7 +127,7 @@ func TestProfileUndirected(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -144,7 +144,7 @@ func TestProfileWeightedUndirected(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -186,7 +186,7 @@ func TestProfileDirected(t *testing.T) {
 		g := simple.NewDirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -203,7 +203,7 @@ func TestProfileWeightedDirected(t *testing.T) {
 		g := simple.NewWeightedDirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {

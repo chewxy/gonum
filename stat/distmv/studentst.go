@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,9 +6,9 @@ package distmv
 
 import (
 	"math"
-	"math/rand"
 	"sort"
 
+	"golang.org/x/exp/rand"
 	"golang.org/x/tools/container/intsets"
 
 	"gonum.org/v1/gonum/floats"
@@ -31,9 +31,11 @@ import (
 // See https://en.wikipedia.org/wiki/Student%27s_t-distribution and
 // http://users.isy.liu.se/en/rt/roth/student.pdf for more information.
 type StudentsT struct {
-	nu  float64
-	mu  []float64
-	src *rand.Rand
+	nu float64
+	mu []float64
+	// If src is altered, rnd must be updated.
+	src rand.Source
+	rnd *rand.Rand
 
 	sigma mat.SymDense // only stored if needed
 
@@ -48,7 +50,7 @@ type StudentsT struct {
 //
 // NewStudentsT panics if len(mu) == 0, or if len(mu) != sigma.Symmetric(). If
 // the covariance matrix is not positive-definite, nil is returned and ok is false.
-func NewStudentsT(mu []float64, sigma mat.Symmetric, nu float64, src *rand.Rand) (dist *StudentsT, ok bool) {
+func NewStudentsT(mu []float64, sigma mat.Symmetric, nu float64, src rand.Source) (dist *StudentsT, ok bool) {
 	if len(mu) == 0 {
 		panic(badZeroDimension)
 	}
@@ -62,6 +64,9 @@ func NewStudentsT(mu []float64, sigma mat.Symmetric, nu float64, src *rand.Rand)
 		mu:  make([]float64, dim),
 		dim: dim,
 		src: src,
+	}
+	if src != nil {
+		s.rnd = rand.New(src)
 	}
 	copy(s.mu, mu)
 
@@ -87,7 +92,7 @@ func NewStudentsT(mu []float64, sigma mat.Symmetric, nu float64, src *rand.Rand)
 // ok indicates whether there was a failure during the update. If ok is false
 // the operation failed and dist is not usable.
 // Mathematically this is impossible, but can occur with finite precision arithmetic.
-func (s *StudentsT) ConditionStudentsT(observed []int, values []float64, src *rand.Rand) (dist *StudentsT, ok bool) {
+func (s *StudentsT) ConditionStudentsT(observed []int, values []float64, src rand.Source) (dist *StudentsT, ok bool) {
 	if len(observed) == 0 {
 		panic("studentst: no observed value")
 	}
@@ -278,7 +283,7 @@ func (s *StudentsT) LogProb(y []float64) float64 {
 // ok indicates whether there was a failure during the marginalization. If ok is false
 // the operation failed and dist is not usable.
 // Mathematically this is impossible, but can occur with finite precision arithmetic.
-func (s *StudentsT) MarginalStudentsT(vars []int, src *rand.Rand) (dist *StudentsT, ok bool) {
+func (s *StudentsT) MarginalStudentsT(vars []int, src rand.Source) (dist *StudentsT, ok bool) {
 	newMean := make([]float64, len(vars))
 	for i, v := range vars {
 		newMean[i] = s.mu[v]
@@ -295,7 +300,7 @@ func (s *StudentsT) MarginalStudentsT(vars []int, src *rand.Rand) (dist *Student
 // See https://en.wikipedia.org/wiki/Marginal_distribution for more information.
 //
 // The input src is passed to the call to NewStudentsT.
-func (s *StudentsT) MarginalStudentsTSingle(i int, src *rand.Rand) distuv.StudentsT {
+func (s *StudentsT) MarginalStudentsTSingle(i int, src rand.Source) distuv.StudentsT {
 	return distuv.StudentsT{
 		Mu:    s.mu[i],
 		Sigma: math.Sqrt(s.sigma.At(i, i)),
@@ -316,6 +321,11 @@ func (s *StudentsT) Mean(x []float64) []float64 {
 	return x
 }
 
+// Nu returns the degrees of freedom parameter of the distribution.
+func (s *StudentsT) Nu() float64 {
+	return s.nu
+}
+
 // Prob computes the value of the probability density function at x.
 func (s *StudentsT) Prob(y []float64) float64 {
 	return math.Exp(s.LogProb(y))
@@ -333,13 +343,13 @@ func (s *StudentsT) Rand(x []float64) []float64 {
 	// Generate Y.
 	x = reuseAs(x, s.dim)
 	tmp := make([]float64, s.dim)
-	if s.src == nil {
+	if s.rnd == nil {
 		for i := range x {
 			tmp[i] = rand.NormFloat64()
 		}
 	} else {
 		for i := range x {
-			tmp[i] = s.src.NormFloat64()
+			tmp[i] = s.rnd.NormFloat64()
 		}
 	}
 	xVec := mat.NewVecDense(s.dim, x)

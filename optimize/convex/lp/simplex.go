@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -70,10 +70,10 @@ const (
 //
 // The Convert function can be used to transform a general LP into standard form.
 //
-// The input matrix A must have full rank and may not contain any columns with
-// all zeros. Furthermore, len(c) must equal the number of columns of A, and len(b)
-// must equal the number of rows of A. Simplex will panic if these conditions are
-// not met.
+// The input matrix A must have at least as many columns as rows, len(c) must
+// equal the number of columns of A, and len(b) must equal the number of rows of
+// A or Simplex will panic. A must also have full row rank and may not contain any
+// columns with all zeros, or Simplex will return an error.
 //
 // initialBasic can be used to set the initial set of indices for a feasible
 // solution to the LP. If an initial feasible solution is not known, initialBasic
@@ -99,6 +99,24 @@ func simplex(initialBasic []int, c []float64, A mat.Matrix, b []float64, tol flo
 		return math.NaN(), nil, nil, err
 	}
 	m, n := A.Dims()
+
+	if m == n {
+		// Problem is exactly constrained, perform a linear solve.
+		bVec := mat.NewVecDense(len(b), b)
+		x := make([]float64, n)
+		xVec := mat.NewVecDense(n, x)
+		err := xVec.SolveVec(A, bVec)
+		if err != nil {
+			return math.NaN(), nil, nil, ErrSingular
+		}
+		for _, v := range x {
+			if v < 0 {
+				return math.NaN(), nil, nil, ErrInfeasible
+			}
+		}
+		f := floats.Dot(x, c)
+		return f, x, nil, nil
+	}
 
 	// There is at least one optimal solution to the LP which is at the intersection
 	// to a set of constraint boundaries. For a standard form LP with m variables
@@ -366,6 +384,9 @@ func replaceBland(A mat.Matrix, ab *mat.Dense, xb []float64, basicIdxs, nonBasic
 
 func verifyInputs(initialBasic []int, c []float64, A mat.Matrix, b []float64) error {
 	m, n := A.Dims()
+	if m > n {
+		panic("lp: more equality constraints than variables")
+	}
 	if len(c) != n {
 		panic("lp: c vector incorrect length")
 	}

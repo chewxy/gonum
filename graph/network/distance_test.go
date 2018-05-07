@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -146,7 +146,7 @@ func TestDistanceCentralityUndirected(t *testing.T) {
 		g := simple.NewWeightedUndirectedGraph(0, math.Inf(1))
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -336,7 +336,7 @@ func TestDistanceCentralityDirected(t *testing.T) {
 		g := simple.NewWeightedDirectedGraph(0, math.Inf(1))
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {

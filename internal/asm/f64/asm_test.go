@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,16 @@ package f64
 
 import (
 	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
+)
+
+const (
+	msgVal      = "%v: unexpected value at %v Got: %v Expected: %v"
+	msgGuard    = "%v: Guard violated in %s vector %v %v"
+	msgReadOnly = "%v: modified read-only %v argument"
+	epsilon     = 1e-13
 )
 
 var (
@@ -137,6 +145,11 @@ func checkValidIncGuard(t *testing.T, vec []float64, gdVal float64, inc, gdLen i
 // same tests for nan-aware equality.
 func same(a, b float64) bool {
 	return a == b || (math.IsNaN(a) && math.IsNaN(b))
+}
+
+// within tests for nan-aware equality within epsilon.
+func within(a, b float64) bool {
+	return same(a, b) || math.Abs(a-b) <= epsilon
 }
 
 var ( // Offset sets for testing alignment handling in Unitary assembly functions.

@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -41,7 +41,12 @@ type Attributers interface {
 // to the the DOT node port to be used by the edge, compass corresponds
 // to DOT compass point to which the edge will be aimed.
 type Porter interface {
+	// FromPort returns the port and compass for the
+	// From node of a graph.Edge.
 	FromPort() (port, compass string)
+
+	// ToPort returns the port and compass for the
+	// To node of a graph.Edge.
 	ToPort() (port, compass string)
 }
 
@@ -151,7 +156,7 @@ func (p *printer) print(g graph.Graph, name string, needsIndent, isSubgraph bool
 		if s, ok := n.(Subgrapher); ok {
 			// If the node is not linked to any other node
 			// the graph needs to be written now.
-			if len(g.From(n)) == 0 {
+			if len(g.From(n.ID())) == 0 {
 				g := s.Subgraph()
 				_, subIsDirected := g.(graph.Directed)
 				if subIsDirected != isDirected {
@@ -182,20 +187,22 @@ func (p *printer) print(g graph.Graph, name string, needsIndent, isSubgraph bool
 
 	havePrintedEdgeHeader := false
 	for _, n := range nodes {
-		to := g.From(n)
+		nid := n.ID()
+		to := g.From(nid)
 		sort.Sort(ordered.ByID(to))
 		for _, t := range to {
+			tid := t.ID()
 			if isDirected {
-				if p.visited[edge{inGraph: name, from: n.ID(), to: t.ID()}] {
+				if p.visited[edge{inGraph: name, from: nid, to: tid}] {
 					continue
 				}
-				p.visited[edge{inGraph: name, from: n.ID(), to: t.ID()}] = true
+				p.visited[edge{inGraph: name, from: nid, to: tid}] = true
 			} else {
-				if p.visited[edge{inGraph: name, from: n.ID(), to: t.ID()}] {
+				if p.visited[edge{inGraph: name, from: nid, to: tid}] {
 					continue
 				}
-				p.visited[edge{inGraph: name, from: n.ID(), to: t.ID()}] = true
-				p.visited[edge{inGraph: name, from: t.ID(), to: n.ID()}] = true
+				p.visited[edge{inGraph: name, from: nid, to: tid}] = true
+				p.visited[edge{inGraph: name, from: tid, to: n.ID()}] = true
 			}
 
 			if !havePrintedEdgeHeader {
@@ -217,9 +224,14 @@ func (p *printer) print(g graph.Graph, name string, needsIndent, isSubgraph bool
 			} else {
 				p.writeNode(n)
 			}
-			e, edgeIsPorter := g.Edge(n, t).(Porter)
+			e := g.Edge(nid, tid)
+			porter, edgeIsPorter := e.(Porter)
 			if edgeIsPorter {
-				p.writePorts(e.FromPort())
+				if e.From().ID() == nid {
+					p.writePorts(porter.FromPort())
+				} else {
+					p.writePorts(porter.ToPort())
+				}
 			}
 
 			if isDirected {
@@ -239,10 +251,14 @@ func (p *printer) print(g graph.Graph, name string, needsIndent, isSubgraph bool
 				p.writeNode(t)
 			}
 			if edgeIsPorter {
-				p.writePorts(e.ToPort())
+				if e.From().ID() == nid {
+					p.writePorts(porter.ToPort())
+				} else {
+					p.writePorts(porter.FromPort())
+				}
 			}
 
-			if a, ok := g.Edge(n, t).(encoding.Attributer); ok {
+			if a, ok := g.Edge(nid, tid).(encoding.Attributer); ok {
 				p.writeAttributeList(a)
 			}
 

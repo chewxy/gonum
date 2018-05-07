@@ -1,4 +1,4 @@
-// Copyright ©2014 The gonum Authors. All rights reserved.
+// Copyright ©2014 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package fd
 
 import (
 	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
@@ -64,7 +65,7 @@ func TestGradient(t *testing.T) {
 		},
 		{
 			nDim:    40,
-			tol:     1e-6,
+			tol:     1e-5,
 			formula: Central,
 		},
 	} {

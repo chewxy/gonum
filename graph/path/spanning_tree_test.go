@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -268,7 +268,7 @@ func testMinumumSpanning(mst func(dst WeightedBuilder, g spanningGraph) float64,
 				test.name, len(gotEdges), len(test.treeEdges))
 		}
 		for _, e := range test.treeEdges {
-			w, ok := dst.Weight(e.From(), e.To())
+			w, ok := dst.Weight(e.From().ID(), e.To().ID())
 			if !ok {
 				t.Errorf("spanning tree edge not found in graph for %q: %+v",
 					test.name, e)

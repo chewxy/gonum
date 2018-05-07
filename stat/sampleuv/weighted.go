@@ -1,11 +1,11 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this code is governed by a BSD-style
 // license that can be found in the LICENSE file
 
 package sampleuv
 
 import (
-	"math/rand"
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
@@ -30,19 +30,21 @@ type Weighted struct {
 	// See comments in container/heap for an
 	// explanation of the layout of a heap.
 	heap []float64
-	src  *rand.Rand
+	rnd  *rand.Rand
 }
 
 // NewWeighted returns a Weighted for the weights w. If src is nil, rand.Rand is
-// used as the random source.
+// used as the random number generator.
 //
 // Note that sampling from weights with a high variance or overall low absolute
 // value sum may result in problems with numerical stability.
-func NewWeighted(w []float64, src *rand.Rand) Weighted {
+func NewWeighted(w []float64, src rand.Source) Weighted {
 	s := Weighted{
 		weights: make([]float64, len(w)),
 		heap:    make([]float64, len(w)),
-		src:     src,
+	}
+	if src != nil {
+		s.rnd = rand.New(src)
 	}
 	s.ReweightAll(w)
 	return s
@@ -62,10 +64,10 @@ func (s Weighted) Take() (idx int, ok bool) {
 	}
 
 	var r float64
-	if s.src == nil {
+	if s.rnd == nil {
 		r = s.heap[0] * rand.Float64()
 	} else {
-		r = s.heap[0] * s.src.Float64()
+		r = s.heap[0] * s.rnd.Float64()
 	}
 	i := 1
 	last := -1

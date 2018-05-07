@@ -1,4 +1,4 @@
-// Copyright ©2013 The gonum Authors. All rights reserved.
+// Copyright ©2013 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -74,7 +74,7 @@
 // used, however, to create the unit of 'Slide', because in this case slide
 // is just a measurement of area. Instead, a constant could be defined.
 //		const Slide unit.Area =  0.001875 // m^2
-// Please note that Unit cannot catch all errors related to dimensionality.
+// Note that Unit cannot catch all errors related to dimensionality.
 // Different physical ideas are sometimes expressed with the same dimensions
 // and Unit is incapable of catching these mismatches. For example, energy and
 // torque are both expressed as force times distance (Newton-meters in SI),

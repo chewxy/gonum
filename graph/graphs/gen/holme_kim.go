@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,7 +7,8 @@ package gen
 import (
 	"errors"
 	"fmt"
-	"math/rand"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -20,10 +21,10 @@ import (
 // additional edges joining existing nodes with probability proportional to the nodes'
 // degrees. The edges are formed as a triad with probability, p.
 // If src is not nil it is used as the random source, otherwise rand.Float64 and
-// rand.Intn are used.
+// rand.Intn are used for the random number generators.
 //
 // The algorithm is essentially as described in http://arxiv.org/abs/cond-mat/0110452.
-func TunableClusteringScaleFree(dst graph.UndirectedBuilder, n, m int, p float64, src *rand.Rand) error {
+func TunableClusteringScaleFree(dst graph.UndirectedBuilder, n, m int, p float64, src rand.Source) error {
 	if p < 0 || p > 1 {
 		return fmt.Errorf("gen: bad probability: p=%v", p)
 	}
@@ -39,14 +40,15 @@ func TunableClusteringScaleFree(dst graph.UndirectedBuilder, n, m int, p float64
 		rnd = rand.Float64
 		rndN = rand.Intn
 	} else {
-		rnd = src.Float64
-		rndN = src.Intn
+		r := rand.New(src)
+		rnd = r.Float64
+		rndN = r.Intn
 	}
 
 	// Initial condition.
 	wt := make([]float64, n)
 	for u := 0; u < m; u++ {
-		if !dst.Has(simple.Node(u)) {
+		if !dst.Has(int64(0)) {
 			dst.AddNode(simple.Node(u))
 		}
 		// We need to give equal probability for
@@ -67,9 +69,9 @@ func TunableClusteringScaleFree(dst graph.UndirectedBuilder, n, m int, p float64
 		for i := 0; i < m; i++ {
 			// Triad formation.
 			if i != 0 && rnd() < p {
-				for _, w := range permute(dst.From(simple.Node(u)), rndN) {
+				for _, w := range permute(dst.From(int64(u)), rndN) {
 					wid := w.ID()
-					if wid == int64(v) || dst.HasEdgeBetween(w, simple.Node(v)) {
+					if wid == int64(v) || dst.HasEdgeBetween(wid, int64(v)) {
 						continue
 					}
 					dst.SetEdge(simple.Edge{F: w, T: simple.Node(v)})
@@ -86,7 +88,7 @@ func TunableClusteringScaleFree(dst graph.UndirectedBuilder, n, m int, p float64
 				if !ok {
 					return errors.New("gen: depleted distribution")
 				}
-				if u == v || dst.HasEdgeBetween(simple.Node(u), simple.Node(v)) {
+				if u == v || dst.HasEdgeBetween(int64(u), int64(v)) {
 					continue
 				}
 				dst.SetEdge(simple.Edge{F: simple.Node(u), T: simple.Node(v)})
@@ -115,11 +117,11 @@ func permute(n []graph.Node, rnd func(int) int) []graph.Node {
 // node having degree m-1. At each iteration of graph addition, one node is added
 // with m additional edges joining existing nodes with probability proportional
 // to the nodes' degrees. If src is not nil it is used as the random source,
-// otherwise rand.Float64 is used.
+// otherwise rand.Float64 is used for the random number generator.
 //
 // The algorithm is essentially as described in http://arxiv.org/abs/cond-mat/0110452
 // after 10.1126/science.286.5439.509.
-func PreferentialAttachment(dst graph.UndirectedBuilder, n, m int, src *rand.Rand) error {
+func PreferentialAttachment(dst graph.UndirectedBuilder, n, m int, src rand.Source) error {
 	if n <= m {
 		return fmt.Errorf("gen: n <= m: n=%v m=%d", n, m)
 	}
@@ -127,7 +129,7 @@ func PreferentialAttachment(dst graph.UndirectedBuilder, n, m int, src *rand.Ran
 	// Initial condition.
 	wt := make([]float64, n)
 	for u := 0; u < m; u++ {
-		if !dst.Has(simple.Node(u)) {
+		if !dst.Has(int64(u)) {
 			dst.AddNode(simple.Node(u))
 		}
 		// We need to give equal probability for

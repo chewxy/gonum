@@ -1,4 +1,4 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,9 +6,9 @@ package testblas
 
 import (
 	"fmt"
-	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 )
 
 type Zcopyer interface {
@@ -29,7 +29,7 @@ func ZcopyTest(t *testing.T, impl Zcopyer) {
 				x = make([]complex128, (n-1)*aincX+1)
 			}
 			for i := range x {
-				x[i] = complex(math.NaN(), math.NaN())
+				x[i] = znan
 			}
 			for i := 0; i < n; i++ {
 				x[i*aincX] = complex(rnd.NormFloat64(), rnd.NormFloat64())
@@ -42,10 +42,13 @@ func ZcopyTest(t *testing.T, impl Zcopyer) {
 				y = make([]complex128, (n-1)*aincY+1)
 			}
 			for i := range y {
-				y[i] = complex(math.NaN(), math.NaN())
+				y[i] = znan
 			}
 
 			want := make([]complex128, len(y))
+			for i := range want {
+				want[i] = znan
+			}
 			if incX*incY > 0 {
 				for i := 0; i < n; i++ {
 					want[i*aincY] = x[i*aincX]

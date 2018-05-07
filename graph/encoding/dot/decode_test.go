@@ -1,4 +1,4 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -24,6 +24,22 @@ func TestRoundTrip(t *testing.T) {
 		},
 		{
 			want:     undirected,
+			directed: false,
+		},
+		{
+			want:     directedID,
+			directed: true,
+		},
+		{
+			want:     undirectedID,
+			directed: false,
+		},
+		{
+			want:     directedWithPorts,
+			directed: true,
+		},
+		{
+			want:     undirectedWithPorts,
 			directed: false,
 		},
 	}
@@ -94,6 +110,60 @@ const undirected = `graph {
 	A -- B [label="baz 2"];
 }`
 
+const directedID = `digraph G {
+	// Node definitions.
+	A;
+	B;
+
+	// Edge definitions.
+	A -> B;
+}`
+
+const undirectedID = `graph H {
+	// Node definitions.
+	A;
+	B;
+
+	// Edge definitions.
+	A -- B;
+}`
+
+const directedWithPorts = `digraph {
+	// Node definitions.
+	A;
+	B;
+	C;
+	D;
+	E;
+	F;
+
+	// Edge definitions.
+	A:foo -> B:bar;
+	A -> C:bar;
+	B:foo -> C;
+	D:foo:n -> E:bar:s;
+	D:e -> F:bar:w;
+	E:_ -> F:c;
+}`
+
+const undirectedWithPorts = `graph {
+	// Node definitions.
+	A;
+	B;
+	C;
+	D;
+	E;
+	F;
+
+	// Edge definitions.
+	A:foo -- B:bar;
+	A -- C:bar;
+	B:foo -- C;
+	D:foo:n -- E:bar:s;
+	D:e -- F:bar:w;
+	E:_ -- F:c;
+}`
+
 // Below follows a minimal implementation of a graph capable of validating the
 // round-trip encoding and decoding of DOT graphs with nodes and edges
 // containing DOT attributes.
@@ -101,9 +171,11 @@ const undirected = `graph {
 // dotDirectedGraph extends simple.DirectedGraph to add NewNode and NewEdge
 // methods for creating user-defined nodes and edges.
 //
-// dotDirectedGraph implements the dot.Builder interface.
+// dotDirectedGraph implements the encoding.Builder and the dot.Graph
+// interfaces.
 type dotDirectedGraph struct {
 	*simple.DirectedGraph
+	id                string
 	graph, node, edge attributes
 }
 
@@ -133,12 +205,24 @@ func (g *dotDirectedGraph) DOTAttributeSetters() (graph, node, edge encoding.Att
 	return &g.graph, &g.node, &g.edge
 }
 
+// SetDOTID sets the DOT ID of the graph.
+func (g *dotDirectedGraph) SetDOTID(id string) {
+	g.id = id
+}
+
+// DOTID returns the DOT ID of the graph.
+func (g *dotDirectedGraph) DOTID() string {
+	return g.id
+}
+
 // dotUndirectedGraph extends simple.UndirectedGraph to add NewNode and NewEdge
 // methods for creating user-defined nodes and edges.
 //
-// dotUndirectedGraph implements the dot.Builder interface.
+// dotUndirectedGraph implements the encoding.Builder and the dot.Graph
+// interfaces.
 type dotUndirectedGraph struct {
 	*simple.UndirectedGraph
+	id                string
 	graph, node, edge attributes
 }
 
@@ -166,6 +250,16 @@ func (g *dotUndirectedGraph) DOTAttributers() (graph, node, edge encoding.Attrib
 // DOTUnmarshalerAttrs implements the dot.UnmarshalerAttrs interface.
 func (g *dotUndirectedGraph) DOTAttributeSetters() (graph, node, edge encoding.AttributeSetter) {
 	return &g.graph, &g.node, &g.edge
+}
+
+// SetDOTID sets the DOT ID of the graph.
+func (g *dotUndirectedGraph) SetDOTID(id string) {
+	g.id = id
+}
+
+// DOTID returns the DOT ID of the graph.
+func (g *dotUndirectedGraph) DOTID() string {
+	return g.id
 }
 
 // dotNode extends simple.Node with a label field to test round-trip encoding
@@ -207,12 +301,18 @@ func (n *dotNode) Attributes() []encoding.Attribute {
 	}}
 }
 
+type dotPortLabels struct {
+	Port, Compass string
+}
+
 // dotEdge extends simple.Edge with a label field to test round-trip encoding and
 // decoding of edge DOT label attributes.
 type dotEdge struct {
 	graph.Edge
 	// Edge label.
-	Label string
+	Label          string
+	FromPortLabels dotPortLabels
+	ToPortLabels   dotPortLabels
 }
 
 // SetAttribute sets a DOT attribute.
@@ -233,6 +333,26 @@ func (e *dotEdge) Attributes() []encoding.Attribute {
 		Key:   "label",
 		Value: e.Label,
 	}}
+}
+
+func (e *dotEdge) SetFromPort(port, compass string) error {
+	e.FromPortLabels.Port = port
+	e.FromPortLabels.Compass = compass
+	return nil
+}
+
+func (e *dotEdge) SetToPort(port, compass string) error {
+	e.ToPortLabels.Port = port
+	e.ToPortLabels.Compass = compass
+	return nil
+}
+
+func (e *dotEdge) FromPort() (port, compass string) {
+	return e.FromPortLabels.Port, e.FromPortLabels.Compass
+}
+
+func (e *dotEdge) ToPort() (port, compass string) {
+	return e.ToPortLabels.Port, e.ToPortLabels.Compass
 }
 
 // attributes is a helper for global attributes.

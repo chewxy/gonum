@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -48,19 +48,19 @@ var vOrderTests = []struct {
 	},
 }
 
-func TestVertexOrdering(t *testing.T) {
+func TestDegeneracyOrdering(t *testing.T) {
 	for i, test := range vOrderTests {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
 				g.SetEdge(simple.Edge{F: simple.Node(u), T: simple.Node(v)})
 			}
 		}
-		order, core := VertexOrdering(g)
+		order, core := DegeneracyOrdering(g)
 		if len(core)-1 != test.wantK {
 			t.Errorf("unexpected value of k for test %d: got: %d want: %d", i, len(core)-1, test.wantK)
 		}
@@ -93,7 +93,7 @@ func TestKCore(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -175,7 +175,7 @@ func TestBronKerbosch(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {

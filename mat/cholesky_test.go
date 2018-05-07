@@ -1,4 +1,4 @@
-// Copyright ©2013 The gonum Authors. All rights reserved.
+// Copyright ©2013 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,10 +6,12 @@ package mat
 
 import (
 	"math"
-	"math/rand"
 	"testing"
 
+	"golang.org/x/exp/rand"
+
 	"gonum.org/v1/gonum/blas/testblas"
+	"gonum.org/v1/gonum/floats"
 )
 
 func TestCholesky(t *testing.T) {
@@ -219,7 +221,7 @@ func TestCholeskySolveVec(t *testing.T) {
 	}
 }
 
-func TestCholeskyTo(t *testing.T) {
+func TestCholeskyToSym(t *testing.T) {
 	for _, test := range []*SymDense{
 		NewSymDense(3, []float64{
 			53, 59, 37,
@@ -232,7 +234,7 @@ func TestCholeskyTo(t *testing.T) {
 		if !ok {
 			t.Fatal("unexpected Cholesky factorization failure: not positive definite")
 		}
-		s := chol.To(nil)
+		s := chol.ToSym(nil)
 
 		if !EqualApprox(s, test, 1e-12) {
 			t.Errorf("Cholesky reconstruction not equal to original matrix.\nWant:\n% v\nGot:\n% v\n", Formatted(test), Formatted(s))
@@ -307,21 +309,37 @@ func TestCholeskyInverseTo(t *testing.T) {
 func TestCholeskySymRankOne(t *testing.T) {
 	rand.Seed(1)
 	for _, n := range []int{1, 2, 3, 4, 5, 7, 10, 20, 50, 100} {
-		for k := 0; k < 10; k++ {
+		for k := 0; k < 50; k++ {
+			// Construct a random positive definite matrix.
 			data := make([]float64, n*n)
 			for i := range data {
 				data[i] = rand.NormFloat64()
 			}
-
 			var a SymDense
 			a.SymOuterK(1, NewDense(n, n, data))
 
+			// Construct random data for updating.
 			xdata := make([]float64, n)
 			for i := range xdata {
 				xdata[i] = rand.NormFloat64()
 			}
 			x := NewVecDense(n, xdata)
+			alpha := rand.NormFloat64()
 
+			// Compute the updated matrix directly. If alpha > 0, there are no
+			// issues. If alpha < 0, it could be that the final matrix is not
+			// positive definite, so instead switch the two matrices.
+			aUpdate := NewSymDense(n, nil)
+			if alpha > 0 {
+				aUpdate.SymRankOne(&a, alpha, x)
+			} else {
+				aUpdate.CopySym(&a)
+				a.Reset()
+				a.SymRankOne(aUpdate, -alpha, x)
+			}
+
+			// Compare the Cholesky decomposition computed with Cholesky.SymRankOne
+			// with that computed from updating A directly.
 			var chol Cholesky
 			ok := chol.Factorize(&a)
 			if !ok {
@@ -329,19 +347,18 @@ func TestCholeskySymRankOne(t *testing.T) {
 				continue
 			}
 
-			alpha := rand.Float64()
-			ok = chol.SymRankOne(&chol, alpha, x)
+			var cholUpdate Cholesky
+			ok = cholUpdate.SymRankOne(&chol, alpha, x)
 			if !ok {
 				t.Errorf("n=%v, alpha=%v: unexpected failure", n, alpha)
 				continue
 			}
-			a.SymRankOne(&a, alpha, x)
 
-			var achol SymDense
-			chol.To(&achol)
-			if !EqualApprox(&achol, &a, 1e-13) {
+			var aCompare SymDense
+			cholUpdate.ToSym(&aCompare)
+			if !EqualApprox(&aCompare, aUpdate, 1e-13) {
 				t.Errorf("n=%v, alpha=%v: mismatch between updated matrix and from Cholesky:\nupdated:\n%v\nfrom Cholesky:\n%v",
-					n, alpha, Formatted(&a), Formatted(&achol))
+					n, alpha, Formatted(aUpdate), Formatted(&aCompare))
 			}
 		}
 	}
@@ -389,6 +406,13 @@ func TestCholeskySymRankOne(t *testing.T) {
 			x:      []float64{0, 0, 0, 1},
 			wantOk: true,
 		},
+		{
+			// Issue #453.
+			a:      NewSymDense(1, []float64{1}),
+			alpha:  -1,
+			x:      []float64{0.25},
+			wantOk: true,
+		},
 	} {
 		var chol Cholesky
 		ok := chol.Factorize(test.a)
@@ -413,12 +437,132 @@ func TestCholeskySymRankOne(t *testing.T) {
 		a.SymRankOne(a, test.alpha, x)
 
 		var achol SymDense
-		chol.To(&achol)
+		chol.ToSym(&achol)
 		if !EqualApprox(&achol, a, 1e-13) {
 			t.Errorf("Case %v: mismatch between updated matrix and from Cholesky:\nupdated:\n%v\nfrom Cholesky:\n%v",
 				i, Formatted(a), Formatted(&achol))
 		}
 	}
+}
+
+func TestCholeskyExtendVecSym(t *testing.T) {
+	for cas, test := range []struct {
+		a *SymDense
+	}{
+		{
+			a: NewSymDense(3, []float64{
+				4, 1, 1,
+				0, 2, 3,
+				0, 0, 6,
+			}),
+		},
+	} {
+		n := test.a.Symmetric()
+		as := test.a.SliceSquare(0, n-1).(*SymDense)
+
+		// Compute the full factorization to use later (do the full factorization
+		// first to ensure the matrix is positive definite).
+		var cholFull Cholesky
+		ok := cholFull.Factorize(test.a)
+		if !ok {
+			panic("mat: bad test, matrix not positive definite")
+		}
+
+		var chol Cholesky
+		ok = chol.Factorize(as)
+		if !ok {
+			panic("mat: bad test, subset is not positive definite")
+		}
+		row := NewVecDense(n, nil)
+		for i := 0; i < n; i++ {
+			row.SetVec(i, test.a.At(n-1, i))
+		}
+
+		var cholNew Cholesky
+		ok = cholNew.ExtendVecSym(&chol, row)
+		if !ok {
+			t.Errorf("cas %v: update not positive definite", cas)
+		}
+		a := cholNew.ToSym(nil)
+		if !EqualApprox(a, test.a, 1e-12) {
+			t.Errorf("cas %v: mismatch", cas)
+		}
+
+		// test in-place
+		ok = chol.ExtendVecSym(&chol, row)
+		if !ok {
+			t.Errorf("cas %v: in-place update not positive definite", cas)
+		}
+		if !equalChol(&chol, &cholNew) {
+			t.Errorf("cas %v: Cholesky different in-place vs. new", cas)
+		}
+
+		// Test that the factorization is about right compared with the direct
+		// full factorization. Use a high tolerance on the condition number
+		// since the condition number with the updated rule is approximate.
+		if !equalApproxChol(&chol, &cholFull, 1e-12, 0.3) {
+			t.Errorf("cas %v: updated Cholesky does not match full", cas)
+		}
+	}
+}
+
+func TestCholeskyScale(t *testing.T) {
+	for cas, test := range []struct {
+		a *SymDense
+		f float64
+	}{
+		{
+			a: NewSymDense(3, []float64{
+				4, 1, 1,
+				0, 2, 3,
+				0, 0, 6,
+			}),
+			f: 0.5,
+		},
+	} {
+		var chol Cholesky
+		ok := chol.Factorize(test.a)
+		if !ok {
+			t.Errorf("Case %v: bad test, Cholesky factorization failed", cas)
+			continue
+		}
+
+		// Compare the update to a new Cholesky to an update in-place.
+		var cholUpdate Cholesky
+		cholUpdate.Scale(test.f, &chol)
+		chol.Scale(test.f, &chol)
+		if !equalChol(&chol, &cholUpdate) {
+			t.Errorf("Case %d: cholesky mismatch new receiver", cas)
+		}
+		var sym SymDense
+		chol.ToSym(&sym)
+		var comp SymDense
+		comp.ScaleSym(test.f, test.a)
+		if !EqualApprox(&comp, &sym, 1e-14) {
+			t.Errorf("Case %d: cholesky reconstruction doesn't match scaled matrix", cas)
+		}
+
+		var cholTest Cholesky
+		cholTest.Factorize(&comp)
+		if !equalApproxChol(&cholTest, &chol, 1e-12, 1e-12) {
+			t.Errorf("Case %d: cholesky mismatch with scaled matrix. %v, %v", cas, cholTest.cond, chol.cond)
+		}
+	}
+}
+
+// equalApproxChol checks that the two Cholesky decompositions are equal.
+func equalChol(a, b *Cholesky) bool {
+	return Equal(a.chol, b.chol) && a.cond == b.cond
+}
+
+// equalApproxChol checks that the two Cholesky decompositions are approximately
+// the same with the given tolerance on equality for the Triangular component and
+// condition.
+func equalApproxChol(a, b *Cholesky, matTol, condTol float64) bool {
+	if !EqualApprox(a.chol, b.chol, matTol) {
+		return false
+	}
+	return floats.EqualWithinAbsOrRel(a.cond, b.cond, condTol, condTol)
 }
 
 func BenchmarkCholeskySmall(b *testing.B) {

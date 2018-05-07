@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,9 +6,10 @@ package distuv
 
 import (
 	"math"
-	"math/rand"
 	"sort"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
@@ -34,10 +35,10 @@ func TestBetaProb(t *testing.T) {
 func TestBetaRand(t *testing.T) {
 	src := rand.New(rand.NewSource(1))
 	for i, b := range []Beta{
-		{Alpha: 0.5, Beta: 0.5, Source: src},
-		{Alpha: 5, Beta: 1, Source: src},
-		{Alpha: 2, Beta: 2, Source: src},
-		{Alpha: 2, Beta: 5, Source: src},
+		{Alpha: 0.5, Beta: 0.5, Src: src},
+		{Alpha: 5, Beta: 1, Src: src},
+		{Alpha: 2, Beta: 2, Src: src},
+		{Alpha: 2, Beta: 5, Src: src},
 	} {
 		testBeta(t, b, i)
 	}

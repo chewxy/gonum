@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"math"
 	"math/cmplx"
-	"math/rand"
 	"strconv"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
@@ -444,7 +445,7 @@ func DgeevTest(t *testing.T, impl Dgeever) {
 		{
 			a:      Wilk12{}.Matrix(),
 			evWant: Wilk12{}.Eigenvalues(),
-			valTol: 1e-8,
+			valTol: 1e-7,
 		},
 		{
 			a:      Wilk20(0).Matrix(),
@@ -532,7 +533,7 @@ func DgeevTest(t *testing.T, impl Dgeever) {
 						a:      a,
 						evWant: ev,
 						valTol: 1e-12,
-						vecTol: 1e-8,
+						vecTol: 1e-7,
 					}
 					testDgeev(t, impl, "random", test, jobvl, jobvr, 0, optimumWork)
 				}
@@ -542,7 +543,7 @@ func DgeevTest(t *testing.T, impl Dgeever) {
 }
 
 func testDgeev(t *testing.T, impl Dgeever, tc string, test dgeevTest, jobvl lapack.LeftEVJob, jobvr lapack.RightEVJob, extra int, wl worklen) {
-	const defaultTol = 1e-13
+	const defaultTol = 1e-12
 	valTol := test.valTol
 	if valTol == 0 {
 		valTol = defaultTol

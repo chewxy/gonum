@@ -1,13 +1,14 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package distuv
 
 import (
-	"math/rand"
 	"sort"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
@@ -72,7 +73,7 @@ func TestF(t *testing.T) {
 func testF(t *testing.T, f F, i int) {
 	const (
 		tol  = 1e-2
-		n    = 1e5
+		n    = 1e6
 		bins = 50
 	)
 	x := make([]float64, n)

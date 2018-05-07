@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,9 +6,10 @@ package testlapack
 
 import (
 	"fmt"
-	"math/rand"
 	"sort"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
@@ -69,7 +70,7 @@ func DbdsqrTest(t *testing.T, impl Dbdsqrer) {
 				copy(dCopy, d)
 				eCopy := make([]float64, len(e))
 				copy(eCopy, e)
-				work := make([]float64, 4*n)
+				work := make([]float64, 4*(n-1))
 				for i := range work {
 					work[i] = rnd.NormFloat64()
 				}

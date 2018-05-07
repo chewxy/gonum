@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package distmv
 
 import (
 	"math"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/diff/fd"
 	"gonum.org/v1/gonum/floats"
@@ -242,7 +243,7 @@ func TestConditionNormal(t *testing.T) {
 		}
 
 		var sigma mat.SymDense
-		newNormal.chol.To(&sigma)
+		newNormal.chol.ToSym(&sigma)
 		if !mat.EqualApprox(test.newSigma, &sigma, 1e-12) {
 			t.Errorf("Updated sigma mismatch\n.Want:\n% v\nGot:\n% v\n", test.newSigma, sigma)
 		}
@@ -280,7 +281,7 @@ func TestConditionNormal(t *testing.T) {
 			t.Fatalf("Bad test, update failed")
 		}
 		var newSigma mat.SymDense
-		newNormal.chol.To(&newSigma)
+		newNormal.chol.ToSym(&newSigma)
 		trueMean := test.mu[0] + rho*(std[0]/std[1])*(test.value-test.mu[1])
 		if math.Abs(trueMean-newNormal.mu[0]) > 1e-14 {
 			t.Errorf("Mean mismatch. Want %v, got %v", trueMean, newNormal.mu[0])
@@ -377,7 +378,7 @@ func TestConditionNormal(t *testing.T) {
 			}
 		}
 		var sigma mat.SymDense
-		newNormal.chol.To(&sigma)
+		newNormal.chol.ToSym(&sigma)
 		if !mat.EqualApprox(&sigma, subEstCov, 1e-1) {
 			t.Errorf("Covariance mismatch. Want:\n%0.8v\nGot:\n%0.8v\n", subEstCov, sigma)
 		}

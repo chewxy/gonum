@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,7 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"math/rand"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -23,7 +24,7 @@ import (
 // Manhattan distance between non-local nodes.
 //
 // The algorithm is essentially as described on p4 of http://www.cs.cornell.edu/home/kleinber/swn.pdf.
-func NavigableSmallWorld(dst GraphBuilder, dims []int, p, q int, r float64, src *rand.Rand) (err error) {
+func NavigableSmallWorld(dst GraphBuilder, dims []int, p, q int, r float64, src rand.Source) (err error) {
 	if p < 1 {
 		return fmt.Errorf("gen: bad local distance: p=%v", p)
 	}
@@ -39,7 +40,7 @@ func NavigableSmallWorld(dst GraphBuilder, dims []int, p, q int, r float64, src 
 		n *= d
 	}
 	for i := 0; i < n; i++ {
-		if !dst.Has(simple.Node(i)) {
+		if !dst.Has(int64(i)) {
 			dst.AddNode(simple.Node(i))
 		}
 	}
@@ -66,14 +67,14 @@ func NavigableSmallWorld(dst GraphBuilder, dims []int, p, q int, r float64, src 
 			if uid > vid {
 				e.F, e.T = e.T, e.F
 			}
-			if !hasEdge(e.From(), e.To()) {
+			if !hasEdge(e.From().ID(), e.To().ID()) {
 				dst.SetEdge(e)
 			}
 			if !isDirected {
 				return
 			}
 			e.F, e.T = e.T, e.F
-			if !hasEdge(e.From(), e.To()) {
+			if !hasEdge(e.From().ID(), e.To().ID()) {
 				dst.SetEdge(e)
 			}
 		})
@@ -109,7 +110,7 @@ func NavigableSmallWorld(dst GraphBuilder, dims []int, p, q int, r float64, src 
 			if !isDirected && uid > vid {
 				e.F, e.T = e.T, e.F
 			}
-			if !hasEdge(e.From(), e.To()) {
+			if !hasEdge(e.From().ID(), e.To().ID()) {
 				dst.SetEdge(e)
 			}
 		}

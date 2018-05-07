@@ -1,4 +1,4 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,9 +6,9 @@ package testblas
 
 import (
 	"fmt"
-	"math/cmplx"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 )
 
 type Zswaper interface {
@@ -30,10 +30,10 @@ func ZswapTest(t *testing.T, impl Zswaper) {
 				y = make([]complex128, (n-1)*aincY+1)
 			}
 			for i := range x {
-				x[i] = cmplx.NaN()
+				x[i] = znan
 			}
 			for i := range y {
-				y[i] = cmplx.NaN()
+				y[i] = znan
 			}
 			for i := 0; i < n; i++ {
 				x[i*aincX] = complex(rnd.NormFloat64(), rnd.NormFloat64())
@@ -41,7 +41,13 @@ func ZswapTest(t *testing.T, impl Zswaper) {
 			}
 
 			xWant := make([]complex128, len(x))
+			for i := range xWant {
+				xWant[i] = znan
+			}
 			yWant := make([]complex128, len(y))
+			for i := range yWant {
+				yWant[i] = znan
+			}
 			if incX*incY > 0 {
 				for i := 0; i < n; i++ {
 					xWant[i*aincX] = y[i*aincY]

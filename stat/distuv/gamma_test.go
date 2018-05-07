@@ -1,13 +1,14 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package distuv
 
 import (
-	"math/rand"
 	"sort"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
@@ -29,17 +30,17 @@ func TestGamma(t *testing.T) {
 	src := rand.New(rand.NewSource(1))
 	for i, g := range []Gamma{
 
-		{Alpha: 0.5, Beta: 0.8, Source: src},
-		{Alpha: 0.9, Beta: 6, Source: src},
-		{Alpha: 0.9, Beta: 500, Source: src},
+		{Alpha: 0.5, Beta: 0.8, Src: src},
+		{Alpha: 0.9, Beta: 6, Src: src},
+		{Alpha: 0.9, Beta: 500, Src: src},
 
-		{Alpha: 1, Beta: 1, Source: src},
+		{Alpha: 1, Beta: 1, Src: src},
 
-		{Alpha: 1.6, Beta: 0.4, Source: src},
-		{Alpha: 2.6, Beta: 1.5, Source: src},
-		{Alpha: 5.6, Beta: 0.5, Source: src},
-		{Alpha: 30, Beta: 1.7, Source: src},
-		{Alpha: 30.2, Beta: 1.7, Source: src},
+		{Alpha: 1.6, Beta: 0.4, Src: src},
+		{Alpha: 2.6, Beta: 1.5, Src: src},
+		{Alpha: 5.6, Beta: 0.5, Src: src},
+		{Alpha: 30, Beta: 1.7, Src: src},
+		{Alpha: 30.2, Beta: 1.7, Src: src},
 	} {
 		testGamma(t, g, i)
 	}

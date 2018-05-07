@@ -1,4 +1,4 @@
-// Copyright ©2014 The gonum Authors. All rights reserved.
+// Copyright ©2014 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"gonum.org/v1/gonum/graph"
+	"gonum.org/v1/gonum/graph/internal/uid"
 )
 
 // UndirectedGraph implements a generalized undirected graph.
@@ -15,17 +16,16 @@ type UndirectedGraph struct {
 	nodes map[int64]graph.Node
 	edges map[int64]map[int64]graph.Edge
 
-	nodeIDs idSet
+	nodeIDs uid.Set
 }
 
-// NewUndirectedGraph returns an UndirectedGraph with the specified self and absent
-// edge weight values.
+// NewUndirectedGraph returns an UndirectedGraph.
 func NewUndirectedGraph() *UndirectedGraph {
 	return &UndirectedGraph{
 		nodes: make(map[int64]graph.Node),
 		edges: make(map[int64]map[int64]graph.Edge),
 
-		nodeIDs: newIDSet(),
+		nodeIDs: uid.NewSet(),
 	}
 }
 
@@ -35,10 +35,10 @@ func (g *UndirectedGraph) NewNode() graph.Node {
 	if len(g.nodes) == 0 {
 		return Node(0)
 	}
-	if int64(len(g.nodes)) == maxInt {
+	if int64(len(g.nodes)) == uid.Max {
 		panic("simple: cannot allocate node: no slot")
 	}
-	return Node(g.nodeIDs.newID())
+	return Node(g.nodeIDs.NewID())
 }
 
 // AddNode adds n to the graph. It panics if the added node ID matches an existing node ID.
@@ -48,7 +48,7 @@ func (g *UndirectedGraph) AddNode(n graph.Node) {
 	}
 	g.nodes[n.ID()] = n
 	g.edges[n.ID()] = make(map[int64]graph.Edge)
-	g.nodeIDs.use(n.ID())
+	g.nodeIDs.Use(n.ID())
 }
 
 // RemoveNode removes n from the graph, as well as any edges attached to it. If the node
@@ -64,7 +64,7 @@ func (g *UndirectedGraph) RemoveNode(n graph.Node) {
 	}
 	delete(g.edges, n.ID())
 
-	g.nodeIDs.release(n.ID())
+	g.nodeIDs.Release(n.ID())
 }
 
 // NewEdge returns a new Edge from the source to the destination node.
@@ -86,10 +86,10 @@ func (g *UndirectedGraph) SetEdge(e graph.Edge) {
 		panic("simple: adding self edge")
 	}
 
-	if !g.Has(from) {
+	if !g.Has(fid) {
 		g.AddNode(from)
 	}
-	if !g.Has(to) {
+	if !g.Has(tid) {
 		g.AddNode(to)
 	}
 
@@ -118,27 +118,31 @@ func (g *UndirectedGraph) Node(id int64) graph.Node {
 }
 
 // Has returns whether the node exists within the graph.
-func (g *UndirectedGraph) Has(n graph.Node) bool {
-	_, ok := g.nodes[n.ID()]
+func (g *UndirectedGraph) Has(id int64) bool {
+	_, ok := g.nodes[id]
 	return ok
 }
 
 // Nodes returns all the nodes in the graph.
 func (g *UndirectedGraph) Nodes() []graph.Node {
+	if len(g.nodes) == 0 {
+		return nil
+	}
 	nodes := make([]graph.Node, len(g.nodes))
 	i := 0
 	for _, n := range g.nodes {
 		nodes[i] = n
 		i++
 	}
-
 	return nodes
 }
 
 // Edges returns all the edges in the graph.
 func (g *UndirectedGraph) Edges() []graph.Edge {
+	if len(g.edges) == 0 {
+		return nil
+	}
 	var edges []graph.Edge
-
 	seen := make(map[[2]int64]struct{})
 	for _, u := range g.edges {
 		for _, e := range u {
@@ -152,54 +156,49 @@ func (g *UndirectedGraph) Edges() []graph.Edge {
 			edges = append(edges, e)
 		}
 	}
-
 	return edges
 }
 
 // From returns all nodes in g that can be reached directly from n.
-func (g *UndirectedGraph) From(n graph.Node) []graph.Node {
-	if !g.Has(n) {
+func (g *UndirectedGraph) From(id int64) []graph.Node {
+	if !g.Has(id) {
 		return nil
 	}
 
-	nodes := make([]graph.Node, len(g.edges[n.ID()]))
+	nodes := make([]graph.Node, len(g.edges[id]))
 	i := 0
-	for from := range g.edges[n.ID()] {
+	for from := range g.edges[id] {
 		nodes[i] = g.nodes[from]
 		i++
 	}
-
 	return nodes
 }
 
 // HasEdgeBetween returns whether an edge exists between nodes x and y.
-func (g *UndirectedGraph) HasEdgeBetween(x, y graph.Node) bool {
-	_, ok := g.edges[x.ID()][y.ID()]
+func (g *UndirectedGraph) HasEdgeBetween(xid, yid int64) bool {
+	_, ok := g.edges[xid][yid]
 	return ok
 }
 
 // Edge returns the edge from u to v if such an edge exists and nil otherwise.
 // The node v must be directly reachable from u as defined by the From method.
-func (g *UndirectedGraph) Edge(u, v graph.Node) graph.Edge {
-	return g.EdgeBetween(u, v)
+func (g *UndirectedGraph) Edge(uid, vid int64) graph.Edge {
+	return g.EdgeBetween(uid, vid)
 }
 
 // EdgeBetween returns the edge between nodes x and y.
-func (g *UndirectedGraph) EdgeBetween(x, y graph.Node) graph.Edge {
-	// We don't need to check if neigh exists because
-	// it's implicit in the edges access.
-	if !g.Has(x) {
+func (g *UndirectedGraph) EdgeBetween(xid, yid int64) graph.Edge {
+	edge, ok := g.edges[xid][yid]
+	if !ok {
 		return nil
 	}
-
-	return g.edges[x.ID()][y.ID()]
+	return edge
 }
 
 // Degree returns the degree of n in g.
-func (g *UndirectedGraph) Degree(n graph.Node) int {
-	if _, ok := g.nodes[n.ID()]; !ok {
+func (g *UndirectedGraph) Degree(id int64) int {
+	if _, ok := g.nodes[id]; !ok {
 		return 0
 	}
-
-	return len(g.edges[n.ID()])
+	return len(g.edges[id])
 }

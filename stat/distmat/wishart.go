@@ -1,4 +1,4 @@
-// Copyright ©2016 The gonum Authors. All rights reserved.
+// Copyright ©2016 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package distmat
 
 import (
 	"math"
-	"math/rand"
 	"sync"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/mathext"
@@ -26,7 +27,7 @@ import (
 // See https://en.wikipedia.org/wiki/Wishart_distribution for more information.
 type Wishart struct {
 	nu  float64
-	src *rand.Rand
+	src rand.Source
 
 	dim     int
 	cholv   mat.Cholesky
@@ -42,7 +43,7 @@ type Wishart struct {
 // successful.
 //
 // NewWishart panics if nu <= d - 1 where d is the order of v.
-func NewWishart(v mat.Symmetric, nu float64, src *rand.Rand) (*Wishart, bool) {
+func NewWishart(v mat.Symmetric, nu float64, src rand.Source) (*Wishart, bool) {
 	dim := v.Symmetric()
 	if nu <= float64(dim-1) {
 		panic("wishart: nu must be greater than dim-1")
@@ -151,7 +152,7 @@ func (w *Wishart) RandSym(x *mat.SymDense) *mat.SymDense {
 	}
 	var c mat.Cholesky
 	w.RandChol(&c)
-	c.To(x)
+	c.ToSym(x)
 	return x
 }
 
@@ -173,9 +174,9 @@ func (w *Wishart) RandChol(c *mat.Cholesky) *mat.Cholesky {
 	// Instead, generate A^T, by using the procedure above, except as an upper
 	// triangular matrix.
 	norm := distuv.Normal{
-		Mu:     0,
-		Sigma:  1,
-		Source: w.src,
+		Mu:    0,
+		Sigma: 1,
+		Src:   w.src,
 	}
 
 	t := mat.NewTriDense(w.dim, mat.Upper, nil)
@@ -204,6 +205,6 @@ func (w *Wishart) RandChol(c *mat.Cholesky) *mat.Cholesky {
 func (w *Wishart) setV() {
 	w.once.Do(func() {
 		w.v = mat.NewSymDense(w.dim, nil)
-		w.cholv.To(w.v)
+		w.cholv.ToSym(w.v)
 	})
 }

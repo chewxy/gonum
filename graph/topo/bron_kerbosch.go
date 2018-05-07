@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,9 +10,9 @@ import (
 	"gonum.org/v1/gonum/graph/internal/set"
 )
 
-// VertexOrdering returns the vertex ordering and the k-cores of
+// DegeneracyOrdering returns the degeneracy ordering and the k-cores of
 // the undirected graph g.
-func VertexOrdering(g graph.Undirected) (order []graph.Node, cores [][]graph.Node) {
+func DegeneracyOrdering(g graph.Undirected) (order []graph.Node, cores [][]graph.Node) {
 	order, offsets := degeneracyOrdering(g)
 
 	ordered.Reverse(order)
@@ -39,7 +39,7 @@ func KCore(k int, g graph.Undirected) []graph.Node {
 	return core
 }
 
-// degeneracyOrdering is the common code for VertexOrdering and KCore. It
+// degeneracyOrdering is the common code for DegeneracyOrdering and KCore. It
 // returns l, the nodes of g in optimal ordering for coloring number and
 // s, a set of relative offsets into l for each k-core, where k is an index
 // into s.
@@ -60,9 +60,10 @@ func degeneracyOrdering(g graph.Undirected) (l []graph.Node, s []int) {
 		neighbours = make(map[int64][]graph.Node)
 	)
 	for _, n := range nodes {
-		adj := g.From(n)
-		neighbours[n.ID()] = adj
-		dv[n.ID()] = len(adj)
+		id := n.ID()
+		adj := g.From(id)
+		neighbours[id] = adj
+		dv[id] = len(adj)
 		if len(adj) > maxDegree {
 			maxDegree = len(adj)
 		}
@@ -146,7 +147,7 @@ func BronKerbosch(g graph.Undirected) [][]graph.Node {
 	order, _ := degeneracyOrdering(g)
 	ordered.Reverse(order)
 	for _, v := range order {
-		neighbours := g.From(v)
+		neighbours := g.From(v.ID())
 		nv := make(set.Nodes, len(neighbours))
 		for _, n := range neighbours {
 			nv.Add(n)
@@ -175,7 +176,8 @@ func (bk *bronKerbosch) maximalCliquePivot(g graph.Undirected, r []graph.Node, p
 		if nu.Has(v) {
 			continue
 		}
-		neighbours := g.From(v)
+		vid := v.ID()
+		neighbours := g.From(vid)
 		nv := make(set.Nodes, len(neighbours))
 		for _, n := range neighbours {
 			nv.Add(n)
@@ -183,7 +185,7 @@ func (bk *bronKerbosch) maximalCliquePivot(g graph.Undirected, r []graph.Node, p
 
 		var found bool
 		for _, n := range r {
-			if n.ID() == v.ID() {
+			if n.ID() == vid {
 				found = true
 				break
 			}
@@ -205,10 +207,10 @@ func (*bronKerbosch) choosePivotFrom(g graph.Undirected, p, x set.Nodes) (neighb
 	// compile time option.
 	if !tomitaTanakaTakahashi {
 		for _, n := range p {
-			return g.From(n)
+			return g.From(n.ID())
 		}
 		for _, n := range x {
-			return g.From(n)
+			return g.From(n.ID())
 		}
 		panic("bronKerbosch: empty set")
 	}
@@ -220,7 +222,7 @@ func (*bronKerbosch) choosePivotFrom(g graph.Undirected, p, x set.Nodes) (neighb
 	maxNeighbors := func(s set.Nodes) {
 	outer:
 		for _, u := range s {
-			nb := g.From(u)
+			nb := g.From(u.ID())
 			c := len(nb)
 			if c <= max {
 				continue

@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -91,7 +91,7 @@ func ExampleCholesky_SymRankOne() {
 	// Rank-1 update the matrix a.
 	a.SymRankOne(a, 1, x)
 
-	au := chol.To(nil)
+	au := chol.ToSym(nil)
 
 	// Print the matrix that was updated directly.
 	fmt.Printf("\nA' =        %0.4v\n", mat.Formatted(a, mat.Prefix("            ")))

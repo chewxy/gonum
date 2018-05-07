@@ -1,4 +1,4 @@
-// Copyright ©2014 The gonum Authors. All rights reserved.
+// Copyright ©2014 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -71,11 +71,11 @@ func TestPathExistsInUndirected(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 
 		for u, e := range test.g {
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
-				if !g.Has(simple.Node(v)) {
+				if !g.Has(int64(v)) {
 					g.AddNode(simple.Node(v))
 				}
 				g.SetEdge(simple.Edge{F: simple.Node(u), T: simple.Node(v)})
@@ -110,11 +110,11 @@ func TestPathExistsInDirected(t *testing.T) {
 		g := simple.NewDirectedGraph()
 
 		for u, e := range test.g {
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
-				if !g.Has(simple.Node(v)) {
+				if !g.Has(int64(v)) {
 					g.AddNode(simple.Node(v))
 				}
 				g.SetEdge(simple.Edge{F: simple.Node(u), T: simple.Node(v)})
@@ -147,11 +147,11 @@ func TestConnectedComponents(t *testing.T) {
 		g := simple.NewUndirectedGraph()
 
 		for u, e := range test.g {
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
-				if !g.Has(simple.Node(v)) {
+				if !g.Has(int64(v)) {
 					g.AddNode(simple.Node(v))
 				}
 				g.SetEdge(simple.Edge{F: simple.Node(u), T: simple.Node(v)})

@@ -1,13 +1,13 @@
-// Copyright ©2017 The gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package testblas
 
 import (
-	"math/cmplx"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 )
 
 type Izamaxer interface {
@@ -24,7 +24,7 @@ func IzamaxTest(t *testing.T, impl Izamaxer) {
 				x = make([]complex128, (n-1)*aincX+1)
 			}
 			for i := range x {
-				x[i] = cmplx.NaN()
+				x[i] = znan
 			}
 			for i := 0; i < n; i++ {
 				re := 2*rnd.Float64() - 1

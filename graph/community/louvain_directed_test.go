@@ -1,4 +1,4 @@
-// Copyright ©2015 The gonum Authors. All rights reserved.
+// Copyright ©2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,10 +6,11 @@ package community
 
 import (
 	"math"
-	"math/rand"
 	"reflect"
 	"sort"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/graph"
@@ -166,12 +167,11 @@ var communityDirectedQTests = []communityDirectedQTest{
 				},
 			},
 			{
-				q: 0.32525510204081637,
+				q: 0.36862244897959184,
 				communities: [][]graph.Node{
-					{simple.Node(0), simple.Node(3), simple.Node(5), simple.Node(7)},
-					{simple.Node(1), simple.Node(2), simple.Node(4), simple.Node(6)},
-					{simple.Node(8), simple.Node(10), simple.Node(11), simple.Node(13), simple.Node(15)},
-					{simple.Node(9), simple.Node(12), simple.Node(14)},
+					{simple.Node(0), simple.Node(1), simple.Node(2), simple.Node(4), simple.Node(5)},
+					{simple.Node(3), simple.Node(6), simple.Node(7)},
+					{simple.Node(8), simple.Node(9), simple.Node(10), simple.Node(11), simple.Node(12), simple.Node(13), simple.Node(14), simple.Node(15)},
 				},
 			},
 			{
@@ -204,7 +204,7 @@ func TestCommunityQDirected(t *testing.T) {
 		g := simple.NewDirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -221,7 +221,7 @@ func TestCommunityQWeightedDirected(t *testing.T) {
 		g := simple.NewWeightedDirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -257,7 +257,7 @@ func TestCommunityDeltaQDirected(t *testing.T) {
 		g := simple.NewDirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -274,7 +274,7 @@ func TestCommunityDeltaQWeightedDirected(t *testing.T) {
 		g := simple.NewWeightedDirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -338,7 +338,7 @@ func testCommunityDeltaQDirected(t *testing.T, test communityDirectedQTest, g gr
 				}
 				connected := false
 				for n := range c {
-					if g.HasEdgeBetween(simple.Node(n), target) {
+					if g.HasEdgeBetween(int64(n), target.ID()) {
 						connected = true
 						break
 					}
@@ -382,7 +382,7 @@ func TestReduceQConsistencyDirected(t *testing.T) {
 		g := simple.NewDirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -399,7 +399,7 @@ func TestReduceQConsistencyWeightedDirected(t *testing.T) {
 		g := simple.NewWeightedDirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -500,7 +500,7 @@ func TestMoveLocalDirected(t *testing.T) {
 		g := simple.NewDirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -517,7 +517,7 @@ func TestMoveLocalWeightedDirected(t *testing.T) {
 		g := simple.NewWeightedDirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -562,7 +562,7 @@ func TestModularizeDirected(t *testing.T) {
 		g := simple.NewDirectedGraph()
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
@@ -579,7 +579,7 @@ func TestModularizeWeightedDirected(t *testing.T) {
 		g := simple.NewWeightedDirectedGraph(0, 0)
 		for u, e := range test.g {
 			// Add nodes that are not defined by an edge.
-			if !g.Has(simple.Node(u)) {
+			if !g.Has(int64(u)) {
 				g.AddNode(simple.Node(u))
 			}
 			for v := range e {
