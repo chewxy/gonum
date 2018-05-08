@@ -54,25 +54,25 @@ func (g *DirectedGraph) AddNode(n graph.Node) {
 	g.nodeIDs.Use(n.ID())
 }
 
-// RemoveNode removes n from the graph, as well as any edges attached to it. If the node
-// is not in the graph it is a no-op.
-func (g *DirectedGraph) RemoveNode(n graph.Node) {
-	if _, ok := g.nodes[n.ID()]; !ok {
+// RemoveNode removes the node with the given ID from the graph, as well as any edges attached
+// to it. If the node is not in the graph it is a no-op.
+func (g *DirectedGraph) RemoveNode(id int64) {
+	if _, ok := g.nodes[id]; !ok {
 		return
 	}
-	delete(g.nodes, n.ID())
+	delete(g.nodes, id)
 
-	for from := range g.from[n.ID()] {
-		delete(g.to[from], n.ID())
+	for from := range g.from[id] {
+		delete(g.to[from], id)
 	}
-	delete(g.from, n.ID())
+	delete(g.from, id)
 
-	for to := range g.to[n.ID()] {
-		delete(g.from[to], n.ID())
+	for to := range g.to[id] {
+		delete(g.from[to], id)
 	}
-	delete(g.to, n.ID())
+	delete(g.to, id)
 
-	g.nodeIDs.Release(n.ID())
+	g.nodeIDs.Release(id)
 }
 
 // NewEdge returns a new Edge from the source to the destination node.
@@ -105,19 +105,18 @@ func (g *DirectedGraph) SetEdge(e graph.Edge) {
 	g.to[tid][fid] = e
 }
 
-// RemoveEdge removes e from the graph, leaving the terminal nodes. If the edge does not exist
-// it is a no-op.
-func (g *DirectedGraph) RemoveEdge(e graph.Edge) {
-	from, to := e.From(), e.To()
-	if _, ok := g.nodes[from.ID()]; !ok {
+// RemoveEdge removes the edge with the given end point IDs from the graph, leaving the terminal
+// nodes. If the edge does not exist it is a no-op.
+func (g *DirectedGraph) RemoveEdge(fid, tid int64) {
+	if _, ok := g.nodes[fid]; !ok {
 		return
 	}
-	if _, ok := g.nodes[to.ID()]; !ok {
+	if _, ok := g.nodes[tid]; !ok {
 		return
 	}
 
-	delete(g.from[from.ID()], to.ID())
-	delete(g.to[to.ID()], from.ID())
+	delete(g.from[fid], tid)
+	delete(g.to[tid], fid)
 }
 
 // Node returns the node in the graph with the given ID.

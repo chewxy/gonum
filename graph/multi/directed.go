@@ -65,25 +65,25 @@ func (g *DirectedGraph) AddNode(n graph.Node) {
 	g.nodeIDs.Use(n.ID())
 }
 
-// RemoveNode removes n from the graph, as well as any edges attached to it. If the node
-// is not in the graph it is a no-op.
-func (g *DirectedGraph) RemoveNode(n graph.Node) {
-	if _, ok := g.nodes[n.ID()]; !ok {
+// RemoveNode removes the node with the given ID from the graph, as well as any edges attached
+// to it. If the node is not in the graph it is a no-op.
+func (g *DirectedGraph) RemoveNode(id int64) {
+	if _, ok := g.nodes[id]; !ok {
 		return
 	}
-	delete(g.nodes, n.ID())
+	delete(g.nodes, id)
 
-	for from := range g.from[n.ID()] {
-		delete(g.to[from], n.ID())
+	for from := range g.from[id] {
+		delete(g.to[from], id)
 	}
-	delete(g.from, n.ID())
+	delete(g.from, id)
 
-	for to := range g.to[n.ID()] {
-		delete(g.from[to], n.ID())
+	for to := range g.to[id] {
+		delete(g.from[to], id)
 	}
-	delete(g.to, n.ID())
+	delete(g.to, id)
 
-	g.nodeIDs.Release(n.ID())
+	g.nodeIDs.Release(id)
 }
 
 // NewLine returns a new Line from the source to the destination node.
@@ -121,26 +121,25 @@ func (g *DirectedGraph) SetLine(l graph.Line) {
 	g.lineIDs.Use(lid)
 }
 
-// RemoveLine removes l from the graph, leaving the terminal nodes. If the line does not exist
-// it is a no-op.
-func (g *DirectedGraph) RemoveLine(l graph.Line) {
-	from, to := l.From(), l.To()
-	if _, ok := g.nodes[from.ID()]; !ok {
+// RemoveLine removes the line with the given end point and line IDs from the graph, leaving
+// the terminal nodes. If the line does not exist it is a no-op.
+func (g *DirectedGraph) RemoveLine(fid, tid, id int64) {
+	if _, ok := g.nodes[fid]; !ok {
 		return
 	}
-	if _, ok := g.nodes[to.ID()]; !ok {
+	if _, ok := g.nodes[tid]; !ok {
 		return
 	}
 
-	delete(g.from[from.ID()][to.ID()], l.ID())
-	if len(g.from[from.ID()][to.ID()]) == 0 {
-		delete(g.from[from.ID()], to.ID())
+	delete(g.from[fid][tid], id)
+	if len(g.from[fid][tid]) == 0 {
+		delete(g.from[fid], tid)
 	}
-	delete(g.to[to.ID()][from.ID()], l.ID())
-	if len(g.to[to.ID()][from.ID()]) == 0 {
-		delete(g.to[to.ID()], from.ID())
+	delete(g.to[tid][fid], id)
+	if len(g.to[tid][fid]) == 0 {
+		delete(g.to[tid], fid)
 	}
-	g.lineIDs.Release(l.ID())
+	g.lineIDs.Release(id)
 }
 
 // Node returns the node in the graph with the given ID.
