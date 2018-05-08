@@ -88,8 +88,13 @@ var operationNames = map[Operation]string{
 
 // Location represents a location in the optimization procedure.
 type Location struct {
-	X        []float64
-	F        float64
+	// X is the parameters of estimation.
+	X []float64
+
+	// F is the computed value of the objective function, given X.
+	F float64
+
+	// Gradient and Hessian are self explanatory.
 	Gradient []float64
 	Hessian  *mat.SymDense
 }
